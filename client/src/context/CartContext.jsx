@@ -30,12 +30,17 @@ export const CartProvider = ({ children }) => {
     if (activeCustomerOrder) {
       setOrderStatus(activeCustomerOrder.status);
       setPlacedOrder(prev => {
-        if (!prev) return activeCustomerOrder;
+        const base = prev || {};
         return {
-          ...prev,
+          ...base,
+          ...activeCustomerOrder,
           status: activeCustomerOrder.status,
-          table: activeCustomerOrder.tableNumber || prev.table,
-          id: activeCustomerOrder.id || prev.id
+          table: activeCustomerOrder.tableNumber || base.table || '1',
+          tableNumber: activeCustomerOrder.tableNumber || base.tableNumber || '1',
+          id: activeCustomerOrder.id || base.id,
+          total: activeCustomerOrder.total || base.total || base.grandTotal || 0,
+          grandTotal: activeCustomerOrder.total || base.grandTotal || base.total || 0,
+          items: activeCustomerOrder.items || base.items || []
         };
       });
     }

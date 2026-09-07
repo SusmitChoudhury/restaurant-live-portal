@@ -3,8 +3,8 @@ import { useCart } from '../context/CartContext';
 import { IconChef, IconCheck, IconUtensils, IconParty } from './Icons';
 
 const steps = [
-  { key: 'pending', label: 'Order Received', icon: <IconUtensils s={22} />, description: 'Your order has been transmitted to the kitchen. Waiting for head chef...' },
-  { key: 'preparing', label: 'Cooking', icon: <IconChef s={22} />, description: 'Chef accepted your order! Your delicious dishes are being cooked.' },
+  { key: 'pending', label: 'Order Received', icon: <IconUtensils s={22} />, description: 'Your order has been transmitted to the kitchen. Waiting for chef to accept...' },
+  { key: 'preparing', label: 'Cooking', icon: <IconChef s={22} />, description: 'Chef accepted your order! Your delicious dishes are being prepared.' },
   { key: 'served', label: 'Served', icon: <IconCheck s={22} />, description: 'Dishes are plated and served hot at your table. Enjoy your meal!' },
 ];
 
@@ -33,12 +33,12 @@ export default function OrderTracker() {
 
   if (!orderStatus || !placedOrder) return null;
 
-  // Determine current step index
+  // Determine current step index safely
   let currentIdx = 0;
   if (orderStatus === 'preparing') currentIdx = 1;
   if (orderStatus === 'served' || orderStatus === 'completed') currentIdx = 2;
 
-  const activeStep = steps[currentIdx];
+  const activeStep = steps[currentIdx] || steps[0];
 
   const formatElapsed = () => {
     const mins = Math.floor(elapsedSeconds / 60);
@@ -52,13 +52,21 @@ export default function OrderTracker() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Safe property extraction
+  const tableNum = placedOrder.table || placedOrder.tableNumber || '1';
+  const orderTime = placedOrder.time || (placedOrder.createdAt ? new Date(placedOrder.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Just now');
+  const items = Array.isArray(placedOrder.items) ? placedOrder.items : [];
+  const extras = Array.isArray(placedOrder.extras) ? placedOrder.extras : [];
+  const totalAmount = Number(placedOrder.grandTotal || placedOrder.total || 0);
+  const note = placedOrder.chefNote || placedOrder.customerNotes || '';
+
   return (
     <div style={{
       position: 'fixed',
       inset: 0,
       background: 'rgba(0, 0, 0, 0.85)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       zIndex: 700,
       display: 'flex',
       alignItems: 'center',
@@ -93,8 +101,8 @@ export default function OrderTracker() {
             Tracking Your Order
           </h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: 0 }}>
-            Table <span style={{ color: 'var(--color-accent)', fontWeight: '700' }}>T{placedOrder.table}</span> &bull;
-            Placed at <span style={{ color: 'var(--color-accent)', fontWeight: '700' }}>{placedOrder.time}</span>
+            Table <span style={{ color: 'var(--color-accent)', fontWeight: '700' }}>T{tableNum}</span> &bull;
+            Placed at <span style={{ color: 'var(--color-accent)', fontWeight: '700' }}>{orderTime}</span>
           </p>
         </div>
 
@@ -206,36 +214,46 @@ export default function OrderTracker() {
           <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-body)', fontWeight: '600' }}>
             Ordered Items
           </h4>
-          {placedOrder.items.map(item => (
-            <div key={item.id} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '0.35rem 0',
-              fontSize: '0.85rem',
-              borderBottom: '1px solid rgba(255,255,255,0.03)',
-            }}>
-              <span>{item.name} × {item.qty}</span>
-              <span style={{ color: 'var(--color-accent)', fontWeight: '600' }}>₹{(item.price * item.qty).toLocaleString('en-IN')}</span>
-            </div>
-          ))}
+          {items.map((item, idx) => {
+            const qty = item.qty || item.quantity || 1;
+            const price = Number(item.price) || 0;
+            return (
+              <div key={item.id || idx} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '0.35rem 0',
+                fontSize: '0.85rem',
+                borderBottom: '1px solid rgba(255,255,255,0.03)',
+              }}>
+                <span>{item.name} × {qty}</span>
+                <span style={{ color: 'var(--color-accent)', fontWeight: '600' }}>
+                  ₹{(price * qty).toLocaleString('en-IN')}
+                </span>
+              </div>
+            );
+          })}
 
-          {placedOrder.extras && placedOrder.extras.length > 0 && (
+          {extras.length > 0 && (
             <>
               <h4 style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-text-muted)', marginTop: '0.75rem', marginBottom: '0.4rem', fontFamily: 'var(--font-body)', fontWeight: '500' }}>
                 Extras
               </h4>
-              {placedOrder.extras.map(e => (
-                <div key={e.id} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  padding: '0.25rem 0',
-                  fontSize: '0.82rem',
-                  color: 'var(--color-text-muted)',
-                }}>
-                  <span>{e.name} × {e.qty}</span>
-                  <span>₹{(e.price * e.qty).toLocaleString('en-IN')}</span>
-                </div>
-              ))}
+              {extras.map((e, idx) => {
+                const qty = e.qty || e.quantity || 1;
+                const price = Number(e.price) || 0;
+                return (
+                  <div key={e.id || idx} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '0.25rem 0',
+                    fontSize: '0.82rem',
+                    color: 'var(--color-text-muted)',
+                  }}>
+                    <span>{e.name} × {qty}</span>
+                    <span>₹{(price * qty).toLocaleString('en-IN')}</span>
+                  </div>
+                );
+              })}
             </>
           )}
 
@@ -248,15 +266,15 @@ export default function OrderTracker() {
             fontWeight: '700',
             fontSize: '1rem',
           }}>
-            <span>Total Paid</span>
+            <span>Total Amount</span>
             <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '1.15rem' }}>
-              ₹{placedOrder.grandTotal.toLocaleString('en-IN')}
+              ₹{totalAmount.toLocaleString('en-IN')}
             </span>
           </div>
         </div>
 
         {/* Note for Chef display */}
-        {placedOrder.chefNote && (
+        {note && (
           <div style={{
             background: 'rgba(212, 175, 55, 0.08)',
             border: '1px solid rgba(212, 175, 55, 0.15)',
@@ -268,7 +286,7 @@ export default function OrderTracker() {
               Special Request for Chef:
             </h4>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', margin: 0, fontStyle: 'italic' }}>
-              "{placedOrder.chefNote}"
+              "{note}"
             </p>
           </div>
         )}
@@ -283,8 +301,8 @@ export default function OrderTracker() {
             <IconParty s={18} /> Done — Back to Menu
           </button>
         ) : (
-          <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-            Status updates live in real-time as the kitchen prepares your meal.
+          <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+            Live kitchen status: <strong>{activeStep.label}</strong>
           </div>
         )}
       </div>

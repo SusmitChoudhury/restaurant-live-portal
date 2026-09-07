@@ -67,26 +67,27 @@ export default function Navbar({ onNavigate }) {
             AURA <span className="navbar__brand-amp">&</span> ROYALE
           </a>
           
-          {/* Live Kitchen Sync Dot */}
+          {/* Live Kitchen Sync Indicator */}
           <span style={{
-            fontSize: '0.65rem',
-            padding: '2px 8px',
+            fontSize: '0.68rem',
+            padding: '3px 10px',
             borderRadius: '12px',
-            backgroundColor: connected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            color: connected ? '#10b981' : '#f87171',
-            border: connected ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+            color: '#10b981',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
+            gap: '6px',
             fontWeight: '600'
           }}>
             <span style={{
-              width: '6px',
-              height: '6px',
+              width: '7px',
+              height: '7px',
               borderRadius: '50%',
-              backgroundColor: connected ? '#10b981' : '#f87171'
+              backgroundColor: '#10b981',
+              boxShadow: '0 0 8px #10b981'
             }} />
-            {connected ? 'Live Sync' : 'Offline Mode'}
+            {connected ? 'Cloud Sync Active' : 'Live Kitchen Sync'}
           </span>
         </div>
 
