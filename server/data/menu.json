@@ -1,0 +1,47 @@
+[
+  {
+    "id": "burger-01",
+    "name": "Truffle Gourmet Smash Burger",
+    "category": "Gourmet Mains",
+    "price": 16.50,
+    "description": "Double smashed wagyu patty, black truffle aioli, aged cheddar, and caramelized onions on toasted brioche.",
+    "image": "burger.png",
+    "isAvailable": true
+  },
+  {
+    "id": "pizza-02",
+    "name": "Artisanal Woodfired Margherita",
+    "category": "Woodfired Pizza",
+    "price": 18.00,
+    "description": "San Marzano tomatoes, fresh buffalo mozzarella, aromatic basil, and Sicilian extra virgin olive oil.",
+    "image": "pizza.png",
+    "isAvailable": true
+  },
+  {
+    "id": "rice-03",
+    "name": "Royal Kashmiri Pulao Feast",
+    "category": "Royal Feast",
+    "price": 21.00,
+    "description": "Fragrant saffron basmati rice tossed with roasted dry fruits, pomegranate pearls, and fresh herbs.",
+    "image": "kashmiri_pulao.jpg",
+    "isAvailable": true
+  },
+  {
+    "id": "pasta-04",
+    "name": "Handcrafted Truffle Pasta",
+    "category": "Italian Pasta",
+    "price": 17.50,
+    "description": "Handmade fettuccine tossed in velvet parmesan cream, wild forest mushrooms, and white truffle oil.",
+    "image": "pasta.png",
+    "isAvailable": true
+  },
+  {
+    "id": "dessert-05",
+    "name": "Signature Belgian Lava Cake",
+    "category": "Artisan Desserts",
+    "price": 11.00,
+    "description": "Warm molten Belgian dark chocolate center served with Madagascan vanilla bean gelato and cocoa dust.",
+    "image": "dessert.png",
+    "isAvailable": true
+  }
+]

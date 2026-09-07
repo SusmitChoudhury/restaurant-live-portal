@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+client/node_modules
+server/node_modules
+
+# Build outputs
+client/dist
+dist
+
+# Logs and env
+*.log
+npm-debug.log*
+.env
+.env.local
+
+# Editor directories
+.vscode
+.idea
+.DS_Store
