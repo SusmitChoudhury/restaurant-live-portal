@@ -15,27 +15,37 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [extras, setExtras] = useState([]);
   const [selectedTable, setSelectedTable] = useState(4);
-  const [orderStatus, setOrderStatus] = useState(null);
+  const [orderStatus, setOrderStatus] = useState(() => {
+    return activeCustomerOrder?.status || null;
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isTableSelectorOpen, setIsTableSelectorOpen] = useState(false);
-  const [placedOrder, setPlacedOrder] = useState(null);
+  const [placedOrder, setPlacedOrder] = useState(() => {
+    return activeCustomerOrder || null;
+  });
   const [chefNote, setChefNote] = useState('');
 
-  // Sync with real-time active customer order updates from the kitchen
+  // Sync strictly with real-time active customer order updates decided by Admin
   useEffect(() => {
     if (activeCustomerOrder) {
-      if (activeCustomerOrder.status === 'pending' || activeCustomerOrder.status === 'preparing') {
-        setOrderStatus('preparing');
-      } else if (activeCustomerOrder.status === 'served') {
-        setOrderStatus('served');
-      } else if (activeCustomerOrder.status === 'completed') {
-        setOrderStatus('served');
-      }
+      setOrderStatus(activeCustomerOrder.status);
+      setPlacedOrder(prev => {
+        if (!prev) return activeCustomerOrder;
+        return {
+          ...prev,
+          status: activeCustomerOrder.status,
+          table: activeCustomerOrder.tableNumber || prev.table,
+          id: activeCustomerOrder.id || prev.id
+        };
+      });
     }
   }, [activeCustomerOrder]);
 
   const addToCart = useCallback((item) => {
-    if (item.isAvailable === false) return; // Prevent adding out of stock item
+    if (item.isAvailable === false) {
+      alert(`"${item.name}" is currently out of stock and cannot be ordered.`);
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
@@ -111,6 +121,7 @@ export const CartProvider = ({ children }) => {
 
     setPlacedOrder({
       id: newOrder?.id || ('ORD-' + Date.now().toString().slice(-6)),
+      status: 'pending', // Strictly Pending until chef takes action
       items: [...cart],
       extras: [...extras],
       table: selectedTable,
@@ -124,7 +135,7 @@ export const CartProvider = ({ children }) => {
       time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
     });
 
-    setOrderStatus('preparing');
+    setOrderStatus('pending'); // Stays Pending until admin accepts
     setIsCartOpen(false);
     setIsTableSelectorOpen(false);
     clearCart();
@@ -133,6 +144,7 @@ export const CartProvider = ({ children }) => {
   const resetOrder = useCallback(() => {
     setOrderStatus(null);
     setPlacedOrder(null);
+    localStorage.removeItem('restaurant_active_customer_order');
   }, []);
 
   return (

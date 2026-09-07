@@ -1,7 +1,9 @@
 import { useCart } from '../context/CartContext';
+import { useSocket } from '../context/SocketContext';
 import { IconClose, IconTrash, IconCart, IconMapPin } from './Icons';
 
 const CartDrawer = () => {
+  const { menu } = useSocket();
   const {
     cart, isCartOpen, setIsCartOpen,
     updateQty, removeFromCart, clearCart,
@@ -10,6 +12,13 @@ const CartDrawer = () => {
     selectedTable, setIsTableSelectorOpen,
     chefNote, setChefNote,
   } = useCart();
+
+  const isItemOutOfStock = (id) => {
+    const m = menu.find(i => i.id === id || String(i.id) === String(id));
+    return m ? m.isAvailable === false : false;
+  };
+  const hasOutOfStockItems = cart.some(item => isItemOutOfStock(item.id));
+
 
   if (!isCartOpen) return null;
 
@@ -52,33 +61,52 @@ const CartDrawer = () => {
                 <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-accent)', marginBottom: '0.75rem', fontFamily: 'var(--font-body)', fontWeight: '600' }}>
                   Menu Items
                 </h4>
-                {cart.map(item => (
-                  <div key={item.id} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.75rem 0',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                    gap: '0.75rem',
-                  }}>
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
-                      <h4 style={{ margin: 0, fontSize: '0.88rem', fontFamily: 'var(--font-body)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</h4>
-                      <span style={{ color: 'var(--color-accent)', fontSize: '0.8rem', fontWeight: '600' }}>
-                        ₹{item.price.toLocaleString('en-IN')} × {item.qty} = ₹{(item.price * item.qty).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                      <div className="qty-control">
-                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
-                        <span className="qty-value">{item.qty}</span>
-                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                {cart.map(item => {
+                  const outOfStock = isItemOutOfStock(item.id);
+                  return (
+                    <div key={item.id} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.75rem 0',
+                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      gap: '0.75rem',
+                      backgroundColor: outOfStock ? 'rgba(239, 68, 68, 0.08)' : 'transparent',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ flexGrow: 1, minWidth: 0, paddingLeft: outOfStock ? '8px' : '0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <h4 style={{ margin: 0, fontSize: '0.88rem', fontFamily: 'var(--font-body)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {item.name}
+                          </h4>
+                          {outOfStock && (
+                            <span style={{ backgroundColor: '#ef4444', color: '#fff', fontSize: '0.62rem', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                              OUT OF STOCK
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ color: outOfStock ? '#f87171' : 'var(--color-accent)', fontSize: '0.8rem', fontWeight: '600' }}>
+                          ₹{item.price.toLocaleString('en-IN')} × {item.qty} = ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                        </span>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '0.2rem' }} title="Remove">
-                        <IconTrash s={16} />
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                        <div className="qty-control">
+                          <button className="qty-btn" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
+                          <span className="qty-value">{item.qty}</span>
+                          <button
+                            className="qty-btn"
+                            disabled={outOfStock}
+                            style={{ opacity: outOfStock ? 0.3 : 1, cursor: outOfStock ? 'not-allowed' : 'pointer' }}
+                            onClick={() => !outOfStock && updateQty(item.id, item.qty + 1)}
+                          >+</button>
+                        </div>
+                        <button onClick={() => removeFromCart(item.id)} style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '0.2rem' }} title="Remove">
+                          <IconTrash s={16} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Extras / Add-ons */}
@@ -290,13 +318,33 @@ const CartDrawer = () => {
               </div>
             )}
 
-            <button
-              className="btn btn-primary"
-              style={{ width: '100%', marginTop: '0.75rem', padding: '0.9rem' }}
-              onClick={() => { setIsCartOpen(false); setIsTableSelectorOpen(true); }}
-            >
-              {selectedTable ? 'Confirm & Place Order' : 'Select Table & Order'}
-            </button>
+            {hasOutOfStockItems ? (
+              <button
+                className="btn btn-secondary"
+                disabled
+                style={{
+                  width: '100%',
+                  marginTop: '0.75rem',
+                  padding: '0.9rem',
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  color: '#f87171',
+                  fontWeight: '700',
+                  cursor: 'not-allowed',
+                  justifyContent: 'center'
+                }}
+              >
+                ⚠️ Please Remove Out-of-Stock Items to Order
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: '0.75rem', padding: '0.9rem', justifyContent: 'center' }}
+                onClick={() => { setIsCartOpen(false); setIsTableSelectorOpen(true); }}
+              >
+                {selectedTable ? 'Confirm & Place Order' : 'Select Table & Order'}
+              </button>
+            )}
           </div>
         )}
       </div>

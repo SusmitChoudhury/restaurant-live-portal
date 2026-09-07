@@ -7,15 +7,37 @@ import OrderCard from './OrderCard';
 import { IconChef } from '../Icons';
 
 export default function AdminDashboard({ onNavigate }) {
-  const { orders, menu, connected } = useSocket();
+  const {
+    orders,
+    menu,
+    connected,
+    updateOrderStatus,
+    backendUrl,
+    saveCustomBackendUrl
+  } = useSocket();
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('admin_auth_token') === 'true';
   });
+
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showSettings, setShowSettings] = useState(false);
+  const [inputUrl, setInputUrl] = useState(backendUrl || '');
+  const [savedNotice, setSavedNotice] = useState(false);
 
   const handleLogout = () => {
     sessionStorage.removeItem('admin_auth_token');
     setIsAuthenticated(false);
+  };
+
+  const handleSaveUrl = (e) => {
+    e.preventDefault();
+    saveCustomBackendUrl(inputUrl);
+    setSavedNotice(true);
+    setTimeout(() => {
+      setSavedNotice(false);
+      setShowSettings(false);
+    }, 1500);
   };
 
   if (!isAuthenticated) {
@@ -54,15 +76,26 @@ export default function AdminDashboard({ onNavigate }) {
             <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', margin: 0, color: '#fff' }}>
               Kitchen & Order Portal
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
-              <span className="live-dot" style={{ backgroundColor: connected ? '#10b981' : '#f87171' }} />
-              {connected ? 'Real-Time Server Connected' : 'Connecting to Server...'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+              <span className="live-dot" style={{ backgroundColor: connected ? '#10b981' : '#f59e0b' }} />
+              {connected
+                ? 'Cloud WebSocket Connected'
+                : 'Local Tab-to-Tab Instant Sync Active'}
             </div>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="btn-secondary"
+            style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+            title="Configure Cloud Backend Server URL"
+          >
+            ⚙️ Server Link
+          </button>
+
           <button
             onClick={playOrderChime}
             className="btn-secondary"
@@ -77,13 +110,13 @@ export default function AdminDashboard({ onNavigate }) {
             className="btn-secondary"
             style={{ fontSize: '0.78rem', padding: '6px 12px' }}
           >
-            🌐 Customer Website
+            🌐 Customer Site
           </button>
 
           <button
             onClick={handleLogout}
             style={{
-              padding: '6px 14px',
+              padding: '6px 12px',
               borderRadius: '8px',
               border: '1px solid rgba(239, 68, 68, 0.35)',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -93,10 +126,66 @@ export default function AdminDashboard({ onNavigate }) {
               cursor: 'pointer'
             }}
           >
-            🔒 Lock / Logout
+            🔒 Logout
           </button>
         </div>
       </header>
+
+      {/* Backend Settings Modal / Dropdown */}
+      {showSettings && (
+        <div style={{
+          backgroundColor: '#0f1713',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
+          padding: '16px 24px',
+          animation: 'fadeIn 0.2s ease'
+        }}>
+          <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            <h3 style={{ fontSize: '0.95rem', color: 'var(--color-accent)', margin: '0 0 6px' }}>
+              ⚙️ Cloud Backend Server Configuration
+            </h3>
+            <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: '0 0 12px' }}>
+              Paste your live Railway backend URL below. Cross-tab sync between tabs is already working instantly!
+            </p>
+            <form onSubmit={handleSaveUrl} style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                placeholder="https://restaurant-live-portal-production.up.railway.app"
+                style={{
+                  flexGrow: 1,
+                  minWidth: '320px',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  color: '#fff',
+                  fontSize: '0.85rem'
+                }}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+              >
+                Save & Connect
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSettings(false)}
+                className="btn-secondary"
+                style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+              >
+                Close
+              </button>
+              {savedNotice && (
+                <span style={{ color: '#10b981', fontSize: '0.82rem', fontWeight: '700' }}>
+                  ✓ Saved! Reconnecting...
+                </span>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Main Admin Content */}
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px' }}>
@@ -187,7 +276,11 @@ export default function AdminDashboard({ onNavigate }) {
               gap: '20px'
             }}>
               {filteredOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onUpdateStatus={updateOrderStatus}
+                />
               ))}
             </div>
           )}
