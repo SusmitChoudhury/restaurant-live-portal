@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { DEFAULT_MENU } from '../data/defaultMenu';
 
 const SocketContext = createContext();
 
@@ -43,40 +44,71 @@ export const playOrderChime = () => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [menu, setMenu] = useState([]);
+  // Default menu is seeded immediately so the UI is never empty!
+  const [menu, setMenu] = useState(DEFAULT_MENU);
   const [orders, setOrders] = useState([]);
   const [activeCustomerOrder, setActiveCustomerOrder] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const socketRef = useRef();
 
+  // Helper to merge live server availability with local menu images & details
+  const mergeMenuData = (serverMenu) => {
+    if (!Array.isArray(serverMenu) || serverMenu.length === 0) return;
+    setMenu(prevMenu => {
+      return prevMenu.map(localItem => {
+        const serverItem = serverMenu.find(s => s.id === localItem.id || String(s.id) === String(localItem.id));
+        if (serverItem) {
+          return {
+            ...localItem,
+            isAvailable: serverItem.isAvailable !== false,
+            // also allow server price overrides if updated
+            price: serverItem.price || localItem.price
+          };
+        }
+        return localItem;
+      });
+    });
+  };
+
   useEffect(() => {
-    // In production, user points VITE_BACKEND_URL to their Render backend
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (
-      window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin
-    );
+    // Determine backend URL
+    const envUrl = import.meta.env.VITE_BACKEND_URL;
+    let backendUrl = envUrl ? envUrl.replace(/\/$/, '') : null;
+    
+    if (!backendUrl) {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        backendUrl = 'http://localhost:5001';
+      }
+    }
+
+    if (!backendUrl) {
+      console.warn('[SocketContext] No VITE_BACKEND_URL configured. Running with local offline menu.');
+      return;
+    }
 
     const s = io(backendUrl, {
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 10,
-      timeout: 10000
+      reconnectionAttempts: 15,
+      reconnectionDelay: 2000,
+      timeout: 15000
     });
 
     socketRef.current = s;
     setSocket(s);
 
     s.on('connect', () => {
-      console.log('Connected to real-time server:', s.id);
+      console.log('Connected to real-time kitchen server:', s.id);
       setConnected(true);
 
-      // Fetch initial menu
+      // Fetch initial menu availability
       s.emit('menu:get', (initialMenu) => {
-        if (initialMenu) setMenu(initialMenu);
+        if (initialMenu) mergeMenuData(initialMenu);
       });
 
-      // Fetch initial orders
+      // Fetch initial orders (for admin)
       s.emit('orders:get', (initialOrders) => {
-        if (initialOrders) setOrders(initialOrders);
+        if (Array.isArray(initialOrders)) setOrders(initialOrders);
       });
     });
 
@@ -85,14 +117,15 @@ export const SocketProvider = ({ children }) => {
       setConnected(false);
     });
 
-    // Real-time stock change listener
+    // Real-time stock change listener (broadcast by admin)
     s.on('menu:stock_updated', (data) => {
       console.log('[Live Event] Stock updated:', data);
-      if (data.menu) {
-        setMenu(data.menu);
-      } else {
-        setMenu(prev => prev.map(item => item.id === data.itemId ? { ...item, isAvailable: data.isAvailable } : item));
-      }
+      setMenu(prev => prev.map(item => {
+        if (item.id === data.itemId || String(item.id) === String(data.itemId)) {
+          return { ...item, isAvailable: data.isAvailable };
+        }
+        return item;
+      }));
     });
 
     // Real-time incoming new order listener (for Admin & Sound)
@@ -104,7 +137,7 @@ export const SocketProvider = ({ children }) => {
       setTimeout(() => setNotification(null), 4000);
     });
 
-    // Real-time order status listener
+    // Real-time order status listener (for Customer Tracker & Admin)
     s.on('order:updated', (updatedOrder) => {
       console.log('[Live Event] Order updated:', updatedOrder);
       setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
@@ -113,10 +146,10 @@ export const SocketProvider = ({ children }) => {
       setActiveCustomerOrder(prev => (prev && prev.id === updatedOrder.id ? updatedOrder : prev));
     });
 
-    // Fallback REST fetch on mount if websocket is slow
+    // Fallback initial REST fetch
     fetch(`${backendUrl}/api/menu`)
       .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setMenu(data); })
+      .then(data => { if (Array.isArray(data)) mergeMenuData(data); })
       .catch(() => {});
 
     fetch(`${backendUrl}/api/orders`)
@@ -131,18 +164,23 @@ export const SocketProvider = ({ children }) => {
 
   // Actions
   const toggleStock = (itemId) => {
+    // Optimistically update local state immediately
+    setMenu(prev => prev.map(item => {
+      if (item.id === itemId || String(item.id) === String(itemId)) {
+        return { ...item, isAvailable: !item.isAvailable };
+      }
+      return item;
+    }));
+
     if (socket && connected) {
       socket.emit('menu:toggle_stock', { itemId });
     } else {
-      // REST fallback
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
       fetch(`${backendUrl}/api/menu/toggle-stock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemId })
-      }).then(res => res.json()).then(res => {
-        if (res.menu) setMenu(res.menu);
-      });
+      }).catch(err => console.error('REST toggle-stock failed:', err));
     }
   };
 
@@ -159,7 +197,7 @@ export const SocketProvider = ({ children }) => {
         });
       } else {
         // REST fallback
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+        const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
         fetch(`${backendUrl}/api/orders`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -170,21 +208,37 @@ export const SocketProvider = ({ children }) => {
             setActiveCustomerOrder(newOrder);
             resolve(newOrder);
           })
-          .catch(() => resolve(null));
+          .catch(() => {
+            // Local mock order if completely offline
+            const localOrder = {
+              id: 'ORD-' + Date.now().toString().slice(-6),
+              tableNumber: String(orderData.tableNumber || '1'),
+              items: orderData.items || [],
+              total: Number(orderData.total) || 0,
+              customerNotes: orderData.customerNotes || '',
+              status: 'pending',
+              createdAt: new Date().toISOString()
+            };
+            setActiveCustomerOrder(localOrder);
+            resolve(localOrder);
+          });
       }
     });
   };
 
   const updateOrderStatus = (orderId, status) => {
+    // Optimistically update
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+
     if (socket && connected) {
       socket.emit('order:update_status', { orderId, status });
     } else {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
       fetch(`${backendUrl}/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
-      });
+      }).catch(() => {});
     }
   };
 

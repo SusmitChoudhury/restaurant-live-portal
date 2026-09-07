@@ -1,291 +1,307 @@
-import React, { useState } from 'react';
-import { useSocket } from '../context/SocketContext';
+import { useCart } from '../context/CartContext';
+import { IconClose, IconTrash, IconCart, IconMapPin } from './Icons';
 
-export default function CartDrawer({
-  isOpen,
-  onClose,
-  cartItems,
-  onUpdateQuantity,
-  onRemoveItem,
-  onClearCart,
-  selectedTable,
-  onOrderPlaced
-}) {
-  const { placeOrder } = useSocket();
-  const [customerNotes, setCustomerNotes] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const CartDrawer = () => {
+  const {
+    cart, isCartOpen, setIsCartOpen,
+    updateQty, removeFromCart, clearCart,
+    extras, addExtra, removeExtra, updateExtraQty, EXTRAS_LIST,
+    itemsSubtotal, extrasSubtotal, gst, serviceCharge, grandTotal, totalItems,
+    selectedTable, setIsTableSelectorOpen,
+    chefNote, setChefNote,
+  } = useCart();
 
-  if (!isOpen) return null;
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
-
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) return;
-    setIsSubmitting(true);
-
-    const orderPayload = {
-      tableNumber: selectedTable,
-      items: cartItems.map(i => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        quantity: i.quantity
-      })),
-      total: total.toFixed(2),
-      customerNotes: customerNotes.trim()
-    };
-
-    const newOrder = await placeOrder(orderPayload);
-    setIsSubmitting(false);
-
-    if (newOrder) {
-      onClearCart();
-      setCustomerNotes('');
-      onClose();
-      if (onOrderPlaced) onOrderPlaced(newOrder);
-    }
-  };
+  if (!isCartOpen) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 200,
-      display: 'flex',
-      justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      backdropFilter: 'blur(6px)'
-    }}>
-      {/* Backdrop click to close */}
-      <div style={{ flexGrow: 1 }} onClick={onClose} />
-
-      {/* Drawer Panel */}
-      <div style={{
-        width: '100%',
-        maxWidth: '440px',
-        backgroundColor: 'var(--bg-secondary)',
-        borderLeft: '1px solid var(--border-color)',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        boxShadow: '-10px 0 30px rgba(0,0,0,0.5)',
-        animation: 'slideLeft 0.3s ease-out'
-      }}>
+    <>
+      <div className="overlay" onClick={() => setIsCartOpen(false)} />
+      <div className="drawer">
         {/* Header */}
         <div style={{
-          padding: '20px',
-          borderBottom: '1px solid var(--border-color)',
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          flexShrink: 0,
         }}>
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.3rem', color: 'var(--text-primary)' }}>
-              Table #{selectedTable} Order
-            </h2>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Items will be sent directly to the kitchen queue
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '4px'
-            }}
-          >
-            ✕
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <IconCart s={20} /> Your Order <span style={{ color: 'var(--color-accent)', fontSize: '0.9rem' }}>({totalItems})</span>
+          </h3>
+          <button onClick={() => setIsCartOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '0.25rem' }}>
+            <IconClose s={22} />
           </button>
         </div>
 
-        {/* Cart Items List */}
-        <div style={{
-          padding: '20px',
-          flexGrow: 1,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px'
-        }}>
-          {cartItems.length === 0 ? (
-            <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🍽️</div>
-              <h4 style={{ color: 'var(--text-primary)', marginBottom: '4px' }}>Your table cart is empty</h4>
-              <p style={{ fontSize: '0.82rem' }}>Select dishes from the menu to start your order.</p>
+        {/* Scrollable Content */}
+        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '1rem 1.5rem' }}>
+          {cart.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.4 }}><IconCart s={48} /></div>
+              <p style={{ fontSize: '1rem' }}>Your cart is empty</p>
+              <p style={{ fontSize: '0.82rem', marginTop: '0.5rem' }}>Browse our menu and add some delicious items!</p>
+              <button className="btn btn-outline btn-sm" style={{ marginTop: '1.5rem' }} onClick={() => { setIsCartOpen(false); document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' }); }}>
+                Browse Menu
+              </button>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  backgroundColor: 'var(--bg-card)',
-                  borderRadius: '10px',
-                  padding: '14px',
-                  border: '1px solid var(--border-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px'
-                }}
-              >
-                <div style={{ flexGrow: 1 }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {item.name}
-                  </h4>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', fontWeight: '700' }}>
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-
-                {/* Inline Quantity Controls (+ and -) */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderRadius: '6px',
-                  border: '1px solid var(--border-color)',
-                  overflow: 'hidden'
-                }}>
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    style={{
-                      padding: '4px 10px',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      fontWeight: '700',
-                      fontSize: '1rem'
-                    }}
-                  >
-                    −
-                  </button>
-                  <span style={{
-                    padding: '0 8px',
-                    fontSize: '0.85rem',
-                    fontWeight: '700',
-                    color: 'var(--text-primary)'
+            <>
+              {/* Cart Items */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-accent)', marginBottom: '0.75rem', fontFamily: 'var(--font-body)', fontWeight: '600' }}>
+                  Menu Items
+                </h4>
+                {cart.map(item => (
+                  <div key={item.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.75rem 0',
+                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    gap: '0.75rem',
                   }}>
-                    {item.quantity}
-                  </span>
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    style={{
-                      padding: '4px 10px',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      fontWeight: '700',
-                      fontSize: '1rem'
-                    }}
-                  >
-                    +
-                  </button>
+                    <div style={{ flexGrow: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: 0, fontSize: '0.88rem', fontFamily: 'var(--font-body)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</h4>
+                      <span style={{ color: 'var(--color-accent)', fontSize: '0.8rem', fontWeight: '600' }}>
+                        ₹{item.price.toLocaleString('en-IN')} × {item.qty} = ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                      <div className="qty-control">
+                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
+                        <span className="qty-value">{item.qty}</span>
+                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                      </div>
+                      <button onClick={() => removeFromCart(item.id)} style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '0.2rem' }} title="Remove">
+                        <IconTrash s={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Extras / Add-ons */}
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: '10px',
+                border: '1px solid rgba(212, 175, 55, 0.1)',
+                padding: '1rem',
+                marginBottom: '1rem',
+              }}>
+                <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-accent)', marginBottom: '0.75rem', fontFamily: 'var(--font-body)', fontWeight: '600' }}>
+                  Add Extras
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  {EXTRAS_LIST.map(extra => {
+                    const inCart = extras.find(e => e.id === extra.id);
+                    return (
+                      <div
+                        key={extra.id}
+                        style={{
+                          background: inCart ? 'var(--color-accent-dim)' : 'rgba(255,255,255,0.03)',
+                          border: inCart ? '1px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '8px',
+                          padding: '0.6rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div style={{ fontSize: '0.78rem', fontWeight: '500', lineHeight: '1.3', color: inCart ? 'var(--color-accent)' : 'var(--color-text-muted)' }}>
+                          {extra.name}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: '600', color: inCart ? 'var(--color-accent)' : 'rgba(255,255,255,0.6)' }}>
+                            ₹{extra.price}
+                          </div>
+
+                          {inCart ? (
+                            <div className="qty-control" style={{ transform: 'scale(0.85)', transformOrigin: 'right center' }}>
+                              <button 
+                                className="qty-btn" 
+                                style={{ width: '24px', height: '24px', fontSize: '0.85rem' }} 
+                                onClick={() => updateExtraQty(extra.id, inCart.qty - 1)}
+                                title="Decrease quantity"
+                              >−</button>
+                              <span className="qty-value" style={{ width: '24px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--color-accent)' }}>
+                                {inCart.qty}
+                              </span>
+                              <button 
+                                className="qty-btn" 
+                                style={{ width: '24px', height: '24px', fontSize: '0.85rem' }} 
+                                onClick={() => updateExtraQty(extra.id, inCart.qty + 1)}
+                                title="Add more"
+                              >+</button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => addExtra(extra)}
+                              style={{
+                                background: 'rgba(212, 175, 55, 0.1)',
+                                border: '1px solid rgba(212, 175, 55, 0.3)',
+                                color: 'var(--color-accent)',
+                                borderRadius: '6px',
+                                padding: '0.2rem 0.6rem',
+                                fontSize: '0.72rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--color-accent)';
+                                e.currentTarget.style.color = '#000';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.1)';
+                                e.currentTarget.style.color = 'var(--color-accent)';
+                              }}
+                            >
+                              <span>+</span> Add
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {/* Remove button */}
-                <button
-                  onClick={() => onRemoveItem(item.id)}
-                  title="Remove item"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    fontSize: '1.1rem',
-                    padding: '4px'
-                  }}
-                >
-                  🗑️
-                </button>
+                {/* Selected extras with qty */}
+                {extras.length > 0 && (
+                  <div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.75rem' }}>
+                    {extras.map(e => (
+                      <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.3rem 0', fontSize: '0.82rem' }}>
+                        <span>{e.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div className="qty-control">
+                            <button className="qty-btn" style={{ width: '26px', height: '26px', fontSize: '0.8rem' }} onClick={() => updateExtraQty(e.id, e.qty - 1)}>−</button>
+                            <span className="qty-value" style={{ width: '28px', fontSize: '0.8rem' }}>{e.qty}</span>
+                            <button className="qty-btn" style={{ width: '26px', height: '26px', fontSize: '0.8rem' }} onClick={() => updateExtraQty(e.id, e.qty + 1)}>+</button>
+                          </div>
+                          <span style={{ color: 'var(--color-accent)', fontWeight: '600', fontSize: '0.8rem', width: '50px', textAlign: 'right' }}>₹{(e.price * e.qty).toLocaleString('en-IN')}</span>
+                          <button onClick={() => removeExtra(e.id)} style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '0.2rem' }} title="Remove">
+                            <IconTrash s={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))
-          )}
 
-          {cartItems.length > 0 && (
-            <div style={{ marginTop: '12px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '0.78rem',
-                color: 'var(--text-secondary)',
-                marginBottom: '6px',
-                fontWeight: '600'
+              {/* ═══ NOTE FOR CHEF ═══ */}
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: '10px',
+                border: '1px solid rgba(212, 175, 55, 0.1)',
+                padding: '1rem',
+                marginBottom: '1rem',
               }}>
-                Special Kitchen Instructions (Optional):
-              </label>
-              <textarea
-                rows={2}
-                placeholder="e.g. Less spicy, dressing on the side, extra napkins..."
-                value={customerNotes}
-                onChange={(e) => setCustomerNotes(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.82rem',
-                  resize: 'none',
-                  outline: 'none'
-                }}
-              />
-            </div>
+                <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--color-accent)', marginBottom: '0.6rem', fontFamily: 'var(--font-body)', fontWeight: '600' }}>
+                  Note for Chef
+                </h4>
+                <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                  Special requests, allergies, spice level, or any changes to your order:
+                </p>
+                <textarea
+                  value={chefNote}
+                  onChange={(e) => setChefNote(e.target.value)}
+                  placeholder="e.g. No onions in biryani, extra spicy butter chicken, nut allergy — please avoid cashews..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem 0.8rem',
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: 'var(--color-text-main)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '0.82rem',
+                    resize: 'vertical',
+                    outline: 'none',
+                    lineHeight: '1.5',
+                    transition: 'border-color 0.3s',
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.4)'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                />
+                {chefNote.trim() && (
+                  <div style={{ marginTop: '0.4rem', fontSize: '0.7rem', color: 'var(--color-success)', fontWeight: '500' }}>
+                    Note will be sent to the kitchen with your order
+                  </div>
+                )}
+              </div>
+
+              <button onClick={clearCart} style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '500' }}>
+                Clear All
+              </button>
+            </>
           )}
         </div>
 
-        {/* Footer with Calculations & Submit */}
-        {cartItems.length > 0 && (
+        {/* Footer - Detailed Billing */}
+        {cart.length > 0 && (
           <div style={{
-            padding: '20px',
-            borderTop: '1px solid var(--border-color)',
-            backgroundColor: 'var(--bg-card)'
+            padding: '1.25rem 1.5rem',
+            borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+            background: 'rgba(0,0,0,0.25)',
+            flexShrink: 0,
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              <span>Subtotal:</span>
-              <span>${subtotal.toFixed(2)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.88rem' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>Items Subtotal</span>
+              <span>₹{itemsSubtotal.toLocaleString('en-IN')}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-              <span>Taxes (8%):</span>
-              <span>${tax.toFixed(2)}</span>
+            {extrasSubtotal > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.88rem' }}>
+                <span style={{ color: 'var(--color-text-muted)' }}>Extras</span>
+                <span>₹{extrasSubtotal.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.88rem' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>GST (5%)</span>
+              <span>₹{gst.toLocaleString('en-IN')}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.88rem' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>Service Charge (3%)</span>
+              <span>₹{serviceCharge.toLocaleString('en-IN')}</span>
             </div>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
-              fontSize: '1.15rem',
-              fontWeight: '800',
-              color: 'var(--text-primary)',
-              borderTop: '1px solid var(--border-color)',
-              paddingTop: '10px',
-              marginBottom: '16px'
+              marginTop: '0.6rem',
+              paddingTop: '0.6rem',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              fontSize: '1.1rem',
+              fontWeight: '700',
             }}>
-              <span>Total:</span>
-              <span className="gold-gradient-text">${total.toFixed(2)}</span>
+              <span>Grand Total</span>
+              <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '1.2rem' }}>
+                ₹{grandTotal.toLocaleString('en-IN')}
+              </span>
             </div>
 
+            {selectedTable && (
+              <div style={{ marginTop: '0.6rem', padding: '0.4rem 0.8rem', background: 'var(--color-accent-dim)', borderRadius: '6px', fontSize: '0.82rem', color: 'var(--color-accent)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <IconMapPin s={14} /> Table {selectedTable} selected
+              </div>
+            )}
+
             <button
-              className="btn-primary"
-              onClick={handleCheckout}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '12px',
-                justifyContent: 'center',
-                fontSize: '0.95rem'
-              }}
+              className="btn btn-primary"
+              style={{ width: '100%', marginTop: '0.75rem', padding: '0.9rem' }}
+              onClick={() => { setIsCartOpen(false); setIsTableSelectorOpen(true); }}
             >
-              {isSubmitting ? 'Sending to Kitchen...' : '🚀 Place Order for Table #' + selectedTable}
+              {selectedTable ? 'Confirm & Place Order' : 'Select Table & Order'}
             </button>
           </div>
         )}
       </div>
-    </div>
+    </>
   );
-}
+};
+
+export default CartDrawer;
