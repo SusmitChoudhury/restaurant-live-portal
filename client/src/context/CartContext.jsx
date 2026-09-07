@@ -11,40 +11,41 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { placeOrder: socketPlaceOrder, activeCustomerOrder } = useSocket();
+  const {
+    placeOrder: socketPlaceOrder,
+    activeCustomerOrder,
+    customerOrders = [],
+    dismissCustomerOrder,
+    clearAllCustomerOrders
+  } = useSocket();
+
   const [cart, setCart] = useState([]);
   const [extras, setExtras] = useState([]);
   const [selectedTable, setSelectedTable] = useState(4);
-  const [orderStatus, setOrderStatus] = useState(() => {
-    return activeCustomerOrder?.status || null;
-  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isTableSelectorOpen, setIsTableSelectorOpen] = useState(false);
-  const [placedOrder, setPlacedOrder] = useState(() => {
-    return activeCustomerOrder || null;
-  });
   const [chefNote, setChefNote] = useState('');
 
-  // Sync strictly with real-time active customer order updates decided by Admin
+  // Selected order tab for multi-order tracking
+  const [selectedOrderId, setSelectedOrderId] = useState(() => {
+    return customerOrders[0]?.id || activeCustomerOrder?.id || null;
+  });
+
+  // Keep selectedOrderId pointing to a valid order when orders list updates
   useEffect(() => {
-    if (activeCustomerOrder) {
-      setOrderStatus(activeCustomerOrder.status);
-      setPlacedOrder(prev => {
-        const base = prev || {};
-        return {
-          ...base,
-          ...activeCustomerOrder,
-          status: activeCustomerOrder.status,
-          table: activeCustomerOrder.tableNumber || base.table || '1',
-          tableNumber: activeCustomerOrder.tableNumber || base.tableNumber || '1',
-          id: activeCustomerOrder.id || base.id,
-          total: activeCustomerOrder.total || base.total || base.grandTotal || 0,
-          grandTotal: activeCustomerOrder.total || base.grandTotal || base.total || 0,
-          items: activeCustomerOrder.items || base.items || []
-        };
-      });
+    if (customerOrders.length > 0) {
+      if (!selectedOrderId || !customerOrders.some(o => o.id === selectedOrderId)) {
+        setSelectedOrderId(customerOrders[0].id);
+      }
+    } else {
+      setSelectedOrderId(null);
     }
-  }, [activeCustomerOrder]);
+  }, [customerOrders, selectedOrderId]);
+
+  // Active placed order derived from selected tab or latest order
+  const currentPlacedOrder = customerOrders.find(o => o.id === selectedOrderId) || customerOrders[0] || null;
+  const orderStatus = currentPlacedOrder?.status || null;
+  const placedOrder = currentPlacedOrder;
 
   const addToCart = useCallback((item) => {
     if (item.isAvailable === false) {
@@ -123,44 +124,43 @@ export const CartProvider = ({ children }) => {
     };
 
     const newOrder = await socketPlaceOrder(orderPayload);
+    if (newOrder?.id) {
+      setSelectedOrderId(newOrder.id);
+    }
 
-    setPlacedOrder({
-      id: newOrder?.id || ('ORD-' + Date.now().toString().slice(-6)),
-      status: 'pending', // Strictly Pending until chef takes action
-      items: [...cart],
-      extras: [...extras],
-      table: selectedTable,
-      chefNote: chefNote.trim(),
-      itemsSubtotal,
-      extrasSubtotal,
-      subtotal,
-      gst,
-      serviceCharge,
-      grandTotal,
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-    });
-
-    setOrderStatus('pending'); // Stays Pending until admin accepts
     setIsCartOpen(false);
     setIsTableSelectorOpen(false);
     clearCart();
-  }, [cart, extras, selectedTable, chefNote, itemsSubtotal, extrasSubtotal, subtotal, gst, serviceCharge, grandTotal, socketPlaceOrder, clearCart]);
+  }, [cart, extras, selectedTable, chefNote, grandTotal, socketPlaceOrder, clearCart]);
 
-  const resetOrder = useCallback(() => {
-    setOrderStatus(null);
-    setPlacedOrder(null);
-    localStorage.removeItem('restaurant_active_customer_order');
-  }, []);
+  const resetOrder = useCallback((orderId) => {
+    if (orderId) {
+      dismissCustomerOrder(orderId);
+    } else if (selectedOrderId) {
+      dismissCustomerOrder(selectedOrderId);
+    } else {
+      clearAllCustomerOrders();
+    }
+  }, [selectedOrderId, dismissCustomerOrder, clearAllCustomerOrders]);
+
+  const dismissOrder = useCallback((orderId) => {
+    if (orderId) {
+      dismissCustomerOrder(orderId);
+    } else if (selectedOrderId) {
+      dismissCustomerOrder(selectedOrderId);
+    }
+  }, [selectedOrderId, dismissCustomerOrder]);
 
   return (
     <CartContext.Provider value={{
       cart, addToCart, removeFromCart, updateQty, clearCart,
       extras, addExtra, removeExtra, updateExtraQty, EXTRAS_LIST,
       selectedTable, setSelectedTable,
-      orderStatus, setOrderStatus,
+      orderStatus, setOrderStatus: () => {},
       isCartOpen, setIsCartOpen,
       isTableSelectorOpen, setIsTableSelectorOpen,
-      placedOrder, placeOrder, resetOrder,
+      placedOrder, placeOrder, resetOrder, dismissOrder,
+      customerOrders, selectedOrderId, setSelectedOrderId,
       chefNote, setChefNote,
       itemsSubtotal, extrasSubtotal, subtotal, gst, serviceCharge, grandTotal, totalItems
     }}>

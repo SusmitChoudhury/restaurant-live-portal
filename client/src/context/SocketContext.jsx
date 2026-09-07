@@ -71,15 +71,25 @@ export const SocketProvider = ({ children }) => {
     return [];
   });
 
-  // Active customer order
-  const [activeCustomerOrder, setActiveCustomerOrder] = useState(() => {
+  // Array of active orders placed by this customer (supports multiple simultaneous orders)
+  const [customerOrders, setCustomerOrders] = useState(() => {
     try {
-      const cached = localStorage.getItem('restaurant_active_customer_order');
+      const cached = localStorage.getItem('restaurant_customer_active_orders');
       if (cached) return JSON.parse(cached);
+      const singleCached = localStorage.getItem('restaurant_active_customer_order');
+      if (singleCached) {
+        const parsed = JSON.parse(singleCached);
+        return parsed ? [parsed] : [];
+      }
     } catch {
       // fallback
     }
-    return null;
+    return [];
+  });
+
+  // Backward compatible single active customer order
+  const [activeCustomerOrder, setActiveCustomerOrder] = useState(() => {
+    return customerOrders[0] || null;
   });
 
   const [notification, setNotification] = useState(null);
@@ -114,7 +124,21 @@ export const SocketProvider = ({ children }) => {
     }
   };
 
-  // Helper to persist active order
+  // Helper to persist customer active orders (multi-order support)
+  const persistCustomerOrders = (newCustomerOrders) => {
+    try {
+      localStorage.setItem('restaurant_customer_active_orders', JSON.stringify(newCustomerOrders));
+      if (newCustomerOrders.length > 0) {
+        localStorage.setItem('restaurant_active_customer_order', JSON.stringify(newCustomerOrders[0]));
+      } else {
+        localStorage.removeItem('restaurant_active_customer_order');
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Helper to persist active order (single)
   const persistActiveOrder = (order) => {
     try {
       if (order) {
@@ -164,6 +188,11 @@ export const SocketProvider = ({ children }) => {
           setOrders(prev => {
             const next = prev.map(o => o.id === payload.orderId ? { ...o, status: payload.status } : o);
             persistOrders(next);
+            return next;
+          });
+          setCustomerOrders(prev => {
+            const next = prev.map(o => o.id === payload.orderId ? { ...o, status: payload.status } : o);
+            persistCustomerOrders(next);
             return next;
           });
           setActiveCustomerOrder(prev => {
@@ -274,6 +303,11 @@ export const SocketProvider = ({ children }) => {
         persistOrders(next);
         return next;
       });
+      setCustomerOrders(prev => {
+        const next = prev.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+        persistCustomerOrders(next);
+        return next;
+      });
       setActiveCustomerOrder(prev => {
         if (prev && prev.id === updatedOrder.id) {
           persistActiveOrder(updatedOrder);
@@ -338,7 +372,12 @@ export const SocketProvider = ({ children }) => {
         createdAt: new Date().toISOString()
       };
 
-      // 1. Update local customer active order & orders list
+      // 1. Update customer orders array (supports multiple orders) & local orders
+      setCustomerOrders(prev => {
+        const next = [newOrder, ...prev.filter(o => o.id !== newOrder.id)];
+        persistCustomerOrders(next);
+        return next;
+      });
       setActiveCustomerOrder(newOrder);
       persistActiveOrder(newOrder);
       setOrders(prev => {
@@ -359,6 +398,11 @@ export const SocketProvider = ({ children }) => {
       if (socketRef.current && socketRef.current.connected) {
         socketRef.current.emit('order:create', orderData, (response) => {
           if (response?.order) {
+            setCustomerOrders(prev => {
+              const next = prev.map(o => (o.id === newOrder.id || o.id === response.order.id) ? response.order : o);
+              persistCustomerOrders(next);
+              return next;
+            });
             setActiveCustomerOrder(response.order);
             persistActiveOrder(response.order);
             resolve(response.order);
@@ -374,6 +418,11 @@ export const SocketProvider = ({ children }) => {
         })
           .then(res => res.json())
           .then(resOrder => {
+            setCustomerOrders(prev => {
+              const next = prev.map(o => (o.id === newOrder.id || o.id === resOrder.id) ? resOrder : o);
+              persistCustomerOrders(next);
+              return next;
+            });
             setActiveCustomerOrder(resOrder);
             persistActiveOrder(resOrder);
             resolve(resOrder);
@@ -385,7 +434,7 @@ export const SocketProvider = ({ children }) => {
     });
   }, [backendUrl]);
 
-  // Action: Update Order Status (Pending -> Preparing -> Served -> Completed)
+  // Action: Update Order Status (Pending -> Preparing -> Served -> Completed | Cancelled)
   const updateOrderStatus = useCallback((orderId, status) => {
     console.log('[Admin Action] Updating order status:', orderId, status);
 
@@ -396,7 +445,14 @@ export const SocketProvider = ({ children }) => {
       return next;
     });
 
-    // 2. Update active customer order if matches
+    // 2. Update customer active orders array
+    setCustomerOrders(prev => {
+      const next = prev.map(o => o.id === orderId ? { ...o, status } : o);
+      persistCustomerOrders(next);
+      return next;
+    });
+
+    // 3. Update active customer order if matches
     setActiveCustomerOrder(prev => {
       if (prev && prev.id === orderId) {
         const updated = { ...prev, status };
@@ -406,7 +462,7 @@ export const SocketProvider = ({ children }) => {
       return prev;
     });
 
-    // 3. Broadcast immediately to Customer tab
+    // 4. Broadcast immediately to Customer tab
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.postMessage({
         type: 'ORDER_UPDATED',
@@ -414,7 +470,7 @@ export const SocketProvider = ({ children }) => {
       });
     }
 
-    // 4. Send to backend server
+    // 5. Send to backend server
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit('order:update_status', { orderId, status });
     } else if (backendUrl) {
@@ -425,6 +481,28 @@ export const SocketProvider = ({ children }) => {
       }).catch(() => {});
     }
   }, [backendUrl]);
+
+  // Dismiss a single customer order from active tracking
+  const dismissCustomerOrder = useCallback((orderId) => {
+    setCustomerOrders(prev => {
+      const next = prev.filter(o => o.id !== orderId);
+      persistCustomerOrders(next);
+      return next;
+    });
+    setActiveCustomerOrder(prev => {
+      if (prev && prev.id === orderId) {
+        return null;
+      }
+      return prev;
+    });
+  }, []);
+
+  // Clear all customer active orders
+  const clearAllCustomerOrders = useCallback(() => {
+    setCustomerOrders([]);
+    persistCustomerOrders([]);
+    setActiveCustomerOrder(null);
+  }, []);
 
   const saveCustomBackendUrl = (url) => {
     const trimmed = (url || '').trim();
@@ -440,8 +518,11 @@ export const SocketProvider = ({ children }) => {
       saveCustomBackendUrl,
       menu,
       orders,
+      customerOrders,
       activeCustomerOrder,
       setActiveCustomerOrder,
+      dismissCustomerOrder,
+      clearAllCustomerOrders,
       toggleStock,
       placeOrder,
       updateOrderStatus,
