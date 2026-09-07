@@ -68,16 +68,16 @@ export default function Navbar({ onNavigate }) {
           </a>
           
           {/* Live Kitchen Sync Indicator */}
-          <span style={{
+          <span className="nav-sync-badge" style={{
             fontSize: '0.68rem',
-            padding: '3px 10px',
+            padding: '3px 8px',
             borderRadius: '12px',
             backgroundColor: 'rgba(16, 185, 129, 0.15)',
             color: '#10b981',
             border: '1px solid rgba(16, 185, 129, 0.35)',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '5px',
             fontWeight: '600'
           }}>
             <span style={{
@@ -87,7 +87,7 @@ export default function Navbar({ onNavigate }) {
               backgroundColor: '#10b981',
               boxShadow: '0 0 8px #10b981'
             }} />
-            {connected ? 'Cloud Sync Active' : 'Live Kitchen Sync'}
+            <span className="nav-sync-text">{connected ? 'Live Sync' : 'Kitchen Sync'}</span>
           </span>
         </div>
 
@@ -167,6 +167,26 @@ export default function Navbar({ onNavigate }) {
 
         {/* Mobile Controls */}
         <div className="navbar__mobile-controls">
+          <button
+            onClick={() => setIsTableSelectorOpen(true)}
+            style={{
+              background: 'rgba(212, 175, 55, 0.12)',
+              border: '1px solid rgba(212, 175, 55, 0.35)',
+              color: 'var(--color-accent)',
+              borderRadius: '20px',
+              padding: '0.35rem 0.65rem',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Change or select table"
+          >
+            🪑 T{selectedTable || '?'}
+          </button>
+
           <button onClick={() => setIsCartOpen(true)} className="navbar__cart-btn" aria-label="Open cart">
             <IconCart s={18} />
             {totalItems > 0 && <span className="badge">{totalItems}</span>}
@@ -191,7 +211,7 @@ export default function Navbar({ onNavigate }) {
           <div className="mobile-menu-overlay" onClick={() => setMenuOpen(false)} />
           <div className="mobile-menu">
             <div className="mobile-menu__header">
-              <span className="navbar__brand" style={{ fontSize: '1.3rem' }}>
+              <span className="navbar__brand" style={{ fontSize: '1.25rem' }}>
                 AURA <span className="navbar__brand-amp">&</span> ROYALE
               </span>
               <button onClick={() => setMenuOpen(false)} className="mobile-menu__close" aria-label="Close menu">
@@ -199,6 +219,26 @@ export default function Navbar({ onNavigate }) {
               </button>
             </div>
             <div className="mobile-menu__links">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  setIsTableSelectorOpen(true);
+                }}
+                className="mobile-menu__link"
+                style={{
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                  width: '100%',
+                  color: 'var(--color-accent)',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >
+                🪑 Table Selection (Currently Table T{selectedTable || 'None'})
+              </button>
+
               {navLinks.map(link => (
                 <a
                   key={link.href}

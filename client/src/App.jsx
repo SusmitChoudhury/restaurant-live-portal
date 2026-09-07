@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import TableSelector from './components/TableSelector';
 import OrderTracker from './components/OrderTracker';
+import MobileFloatingCart from './components/MobileFloatingCart';
 import AdminDashboard from './components/admin/AdminDashboard';
 
 function MainApp() {
@@ -93,6 +94,7 @@ function MainApp() {
 
             {/* Overlays */}
             <CartDrawer />
+            <MobileFloatingCart />
             <TableSelector />
             <OrderTracker />
           </>

@@ -103,8 +103,11 @@ export default function OrderTracker() {
       <div
         style={{
           position: 'fixed',
-          bottom: '24px',
-          left: '24px',
+          bottom: 'max(14px, env(safe-area-inset-bottom))',
+          left: '12px',
+          right: '12px',
+          maxWidth: '520px',
+          margin: '0 auto',
           zIndex: 600,
           backgroundColor: '#141a18',
           border: isCancelled ? '1px solid #ef4444' : '1px solid var(--color-accent)',
@@ -112,41 +115,43 @@ export default function OrderTracker() {
             ? '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(239, 68, 68, 0.25)'
             : '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.25)',
           borderRadius: '50px',
-          padding: '8px 18px',
+          padding: '8px 16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          justifyContent: 'space-between',
+          gap: '10px',
           animation: 'fadeIn 0.3s ease',
           transition: 'transform 0.2s ease',
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
         }}
       >
         <div
           onClick={() => setIsMinimized(false)}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', minWidth: 0, flexGrow: 1 }}
           title="Click to view live order tracking"
         >
           {hasMultiple ? (
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
               {customerOrders.map(o => {
                 const s = getStatusBadge(o.status);
                 return <span key={o.id} style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: s.dot }} />;
               })}
             </div>
           ) : (
-            <span className="live-dot" style={{ backgroundColor: statusMeta.dot }} />
+            <span className="live-dot" style={{ backgroundColor: statusMeta.dot, flexShrink: 0 }} />
           )}
 
-          <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#fff' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {hasMultiple ? (
               <>Table T{tableNum}: <span style={{ color: 'var(--color-accent)' }}>{customerOrders.length} Orders Active</span></>
             ) : (
-              <>Table T{tableNum} &bull; <span style={{ color: 'var(--color-accent)', fontWeight: '800' }}>#{orderId}</span>: <span style={{ color: statusMeta.color }}>{statusMeta.label}</span></>
+              <>Table T{tableNum} &bull; <span style={{ color: 'var(--color-accent)' }}>#{orderId}</span>: <span style={{ color: statusMeta.color }}>{statusMeta.label}</span></>
             )}
           </span>
 
-          <span style={{ fontSize: '0.78rem', color: 'var(--color-accent)', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: '10px' }}>
-            {hasMultiple ? 'View All Orders ↗' : 'View Status ↗'}
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {hasMultiple ? 'View All ↗' : 'View ↗'}
           </span>
         </div>
 
@@ -167,13 +172,13 @@ export default function OrderTracker() {
             border: 'none',
             color: 'var(--color-text-muted)',
             cursor: 'pointer',
-            padding: '2px',
+            padding: '4px',
             display: 'flex',
             alignItems: 'center',
-            marginLeft: '4px'
+            flexShrink: 0
           }}
         >
-          <IconClose s={14} />
+          <IconClose s={16} />
         </button>
       </div>
     );
@@ -197,20 +202,20 @@ export default function OrderTracker() {
         justifyContent: 'center',
         animation: 'fadeIn 0.3s ease',
         overflowY: 'auto',
-        padding: '20px',
+        padding: '12px',
       }}
     >
       <div style={{
         background: '#141a18',
         border: isCancelled ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(212, 175, 55, 0.3)',
         borderRadius: '16px',
-        padding: 'clamp(1.5rem, 3vw, 2.5rem)',
-        maxWidth: '580px',
+        padding: 'clamp(1.2rem, 3.5vw, 2.2rem)',
+        maxWidth: '560px',
         width: '100%',
         boxShadow: isCancelled
           ? '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(239, 68, 68, 0.15)'
           : '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212, 175, 55, 0.15)',
-        maxHeight: '90vh',
+        maxHeight: '90dvh',
         overflowY: 'auto',
         position: 'relative'
       }}>

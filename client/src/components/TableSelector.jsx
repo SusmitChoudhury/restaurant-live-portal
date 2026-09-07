@@ -28,20 +28,36 @@ const TableSelector = () => {
   return (
     <>
       <div className="overlay" onClick={() => setIsTableSelectorOpen(false)} />
-      <div className="modal">
-        <div style={{ padding: '1.75rem 2rem 1rem', borderBottom: '1px solid rgba(212, 175, 55, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="modal" style={{ maxHeight: '90dvh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '1.25rem clamp(1rem, 4vw, 2rem) 0.85rem', borderBottom: '1px solid rgba(212, 175, 55, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>Select Your Table</h3>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', marginTop: '0.4rem', marginBottom: 0 }}>
-              Choose a table to place your order — greyed out tables are occupied.
+            <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>Select Your Table</h3>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.25rem', marginBottom: 0 }}>
+              Tap your table number below to confirm dining seat.
             </p>
           </div>
-          <button onClick={() => setIsTableSelectorOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-            <IconClose s={22} />
+          <button
+            onClick={() => setIsTableSelectorOpen(false)}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              flexShrink: 0
+            }}
+            aria-label="Close table selector"
+          >
+            <IconClose s={20} />
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', padding: '1rem 2rem 0', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+        <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', padding: '0.75rem 1rem 0', fontSize: '0.75rem', color: 'var(--color-text-muted)', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <div style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)' }} />
             Available
@@ -56,7 +72,7 @@ const TableSelector = () => {
           </div>
         </div>
 
-        <div className="table-grid">
+        <div className="table-grid" style={{ overflowY: 'auto', flexGrow: 1 }}>
           {tables.map(table => (
             <div
               key={table.id}
@@ -72,17 +88,36 @@ const TableSelector = () => {
           ))}
         </div>
 
-        <div style={{ padding: '1.25rem 2rem', borderTop: '1px solid rgba(212, 175, 55, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{
+          padding: '1rem clamp(1rem, 4vw, 2rem)',
+          borderTop: '1px solid rgba(212, 175, 55, 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))'
+        }}>
           <div>
-            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem' }}>Order Total: </span>
-            <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '1.25rem', fontWeight: '700' }}>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Order Total: </span>
+            <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: '700' }}>
               ₹{grandTotal.toLocaleString('en-IN')}
             </span>
           </div>
-          <button className="btn btn-primary" disabled={!selectedTable || cart.length === 0} onClick={placeOrder}
-            style={{ opacity: (!selectedTable || cart.length === 0) ? 0.4 : 1, cursor: (!selectedTable || cart.length === 0) ? 'not-allowed' : 'pointer' }}
+          <button
+            className="btn btn-primary"
+            disabled={!selectedTable || cart.length === 0}
+            onClick={placeOrder}
+            style={{
+              opacity: (!selectedTable || cart.length === 0) ? 0.4 : 1,
+              cursor: (!selectedTable || cart.length === 0) ? 'not-allowed' : 'pointer',
+              flexGrow: 1,
+              justifyContent: 'center',
+              padding: '0.8rem 1.25rem',
+              fontSize: '0.85rem'
+            }}
           >
-            Place Order at Table {selectedTable || '...'}
+            Place Order at Table {selectedTable ? `T${selectedTable}` : '...'}
           </button>
         </div>
       </div>

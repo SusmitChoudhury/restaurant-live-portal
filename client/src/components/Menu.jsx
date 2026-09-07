@@ -43,7 +43,10 @@ export default function Menu() {
             <button
               key={cat}
               className={`category-tab ${activeCategory === cat ? 'active' : ''}`}
-              onClick={() => setActiveCategory(cat)}
+              onClick={(e) => {
+                setActiveCategory(cat);
+                e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+              }}
             >
               {cat}
               {cat !== 'All' && (
@@ -58,8 +61,8 @@ export default function Menu() {
         {/* Menu Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '1.5rem',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+          gap: 'clamp(1rem, 3vw, 1.5rem)',
         }}>
           {filtered.map((item) => {
             const qty = getCartQty(item.id);
@@ -96,7 +99,7 @@ export default function Menu() {
                 }}
               >
                 {/* Image Container */}
-                <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: 'clamp(175px, 26vw, 210px)', overflow: 'hidden', position: 'relative' }}>
                   <img
                     src={item.image}
                     alt={item.name}
@@ -204,7 +207,7 @@ export default function Menu() {
                       <IconCart s={14} /> Add to Cart
                     </button>
                   ) : (
-                    <div className="qty-control" style={{ width: '100%', justifyContent: 'center' }}>
+                    <div className="qty-control" style={{ width: '100%', justifyContent: 'center', userSelect: 'none', WebkitUserSelect: 'none' }}>
                       <button className="qty-btn" onClick={() => updateQty(item.id, qty - 1)}>−</button>
                       <span className="qty-value">{qty}</span>
                       <button className="qty-btn" onClick={() => updateQty(item.id, qty + 1)}>+</button>

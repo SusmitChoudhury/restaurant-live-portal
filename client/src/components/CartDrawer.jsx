@@ -38,8 +38,24 @@ const CartDrawer = () => {
           <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <IconCart s={20} /> Your Order <span style={{ color: 'var(--color-accent)', fontSize: '0.9rem' }}>({totalItems})</span>
           </h3>
-          <button onClick={() => setIsCartOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '0.25rem' }}>
-            <IconClose s={22} />
+          <button
+            onClick={() => setIsCartOpen(false)}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              flexShrink: 0
+            }}
+            aria-label="Close cart"
+          >
+            <IconClose s={20} />
           </button>
         </div>
 
@@ -274,9 +290,10 @@ const CartDrawer = () => {
         {/* Footer - Detailed Billing */}
         {cart.length > 0 && (
           <div style={{
-            padding: '1.25rem 1.5rem',
+            padding: '1.25rem clamp(1rem, 4vw, 1.5rem)',
+            paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.25rem))',
             borderTop: '1px solid rgba(212, 175, 55, 0.15)',
-            background: 'rgba(0,0,0,0.25)',
+            background: 'rgba(0,0,0,0.3)',
             flexShrink: 0,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.88rem' }}>
