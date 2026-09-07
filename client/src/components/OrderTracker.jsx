@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { IconChef, IconCheck, IconUtensils, IconParty } from './Icons';
+import { IconChef, IconCheck, IconUtensils, IconParty, IconClose } from './Icons';
 
 const steps = [
   { key: 'pending', label: 'Order Received', icon: <IconUtensils s={22} />, description: 'Your order has been transmitted to the kitchen. Waiting for chef to accept...' },
@@ -11,6 +11,7 @@ const steps = [
 export default function OrderTracker() {
   const { orderStatus, placedOrder, resetOrder } = useCart();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   // Timer solely counting how long ago the order was placed (NO auto-advance)
   useEffect(() => {
@@ -21,15 +22,17 @@ export default function OrderTracker() {
     return () => clearInterval(interval);
   }, [orderStatus]);
 
-  // Lock body scroll when tracker is open
+  // Lock body scroll ONLY when modal is full screen (not minimized)
   useEffect(() => {
-    if (orderStatus && placedOrder) {
+    if (orderStatus && placedOrder && !isMinimized) {
       document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [orderStatus, placedOrder]);
+  }, [orderStatus, placedOrder, isMinimized]);
 
   if (!orderStatus || !placedOrder) return null;
 
@@ -60,21 +63,87 @@ export default function OrderTracker() {
   const totalAmount = Number(placedOrder.grandTotal || placedOrder.total || 0);
   const note = placedOrder.chefNote || placedOrder.customerNotes || '';
 
+  // 1. Minimized Floating Status Bar (allows customer to continue browsing)
+  if (isMinimized) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '24px',
+          zIndex: 600,
+          backgroundColor: '#141a18',
+          border: '1px solid var(--color-accent)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.25)',
+          borderRadius: '50px',
+          padding: '8px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'fadeIn 0.3s ease',
+          transition: 'transform 0.2s ease',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          onClick={() => setIsMinimized(false)}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          title="Click to expand live order tracker"
+        >
+          <span className="live-dot" style={{ backgroundColor: activeStep.key === 'served' ? '#10b981' : '#f59e0b' }} />
+          <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#fff' }}>
+            Table T{tableNum}: <span style={{ color: 'var(--color-accent)' }}>{activeStep.label}</span>
+          </span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--color-accent)', borderLeft: '1px solid rgba(255,255,255,0.15)', paddingLeft: '10px' }}>
+            View Order ↗
+          </span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (window.confirm('Do you want to close this order tracker and return to normal menu view?')) {
+              handleDone();
+            }
+          }}
+          title="Dismiss Tracker"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--color-text-muted)',
+            cursor: 'pointer',
+            padding: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: '4px'
+          }}
+        >
+          <IconClose s={14} />
+        </button>
+      </div>
+    );
+  }
+
+  // 2. Full Modal View
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(0, 0, 0, 0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      zIndex: 700,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      animation: 'fadeIn 0.3s ease',
-      overflowY: 'auto',
-      padding: '20px',
-    }}>
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsMinimized(true);
+      }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        zIndex: 700,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        animation: 'fadeIn 0.3s ease',
+        overflowY: 'auto',
+        padding: '20px',
+      }}
+    >
       <div style={{
         background: '#141a18',
         border: '1px solid rgba(212, 175, 55, 0.3)',
@@ -85,7 +154,42 @@ export default function OrderTracker() {
         boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212, 175, 55, 0.15)',
         maxHeight: '90vh',
         overflowY: 'auto',
+        position: 'relative'
       }}>
+        {/* Close / Exit Button in Top-Right Corner */}
+        <button
+          onClick={() => setIsMinimized(true)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: '50%',
+            width: '38px',
+            height: '38px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            zIndex: 10
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+          }}
+          title="Exit to menu (keeps tracking in background)"
+          aria-label="Close modal and return to menu"
+        >
+          <IconClose s={20} />
+        </button>
+
         {/* Header */}
         <div className="text-center" style={{ marginBottom: '1.5rem' }}>
           <span style={{
@@ -114,7 +218,6 @@ export default function OrderTracker() {
           position: 'relative',
           margin: '2rem 1rem'
         }}>
-          {/* Track line behind dots */}
           <div style={{
             position: 'absolute',
             top: '50%',
@@ -126,7 +229,6 @@ export default function OrderTracker() {
             transform: 'translateY(-50%)'
           }} />
 
-          {/* Active progress line */}
           <div style={{
             position: 'absolute',
             top: '50%',
@@ -291,20 +393,40 @@ export default function OrderTracker() {
           </div>
         )}
 
-        {/* Action Button: When Served or Completed */}
-        {(orderStatus === 'served' || orderStatus === 'completed') ? (
-          <button
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '0.9rem', fontSize: '0.9rem', justifyContent: 'center' }}
-            onClick={handleDone}
-          >
-            <IconParty s={18} /> Done — Back to Menu
-          </button>
-        ) : (
-          <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-            Live kitchen status: <strong>{activeStep.label}</strong>
-          </div>
-        )}
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1.25rem' }}>
+          {(orderStatus === 'served' || orderStatus === 'completed') ? (
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '0.9rem', fontSize: '0.95rem', justifyContent: 'center' }}
+              onClick={handleDone}
+            >
+              <IconParty s={18} /> Order Served — Finish & Back to Menu
+            </button>
+          ) : (
+            <>
+              <button
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  padding: '0.85rem',
+                  fontSize: '0.88rem',
+                  justifyContent: 'center',
+                  fontWeight: '600',
+                  border: '1px solid var(--color-accent)',
+                  color: 'var(--color-accent)',
+                  background: 'rgba(212, 175, 55, 0.08)'
+                }}
+                onClick={() => setIsMinimized(true)}
+              >
+                ← Back to Menu (Minimize Tracker)
+              </button>
+              <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                Click anywhere outside or the top-right ✕ to return to menu. Live status stays visible in the bottom corner.
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
