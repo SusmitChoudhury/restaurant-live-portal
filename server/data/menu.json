@@ -1,78 +1,530 @@
 [
-  { "id": 101, "name": "Golden Appetizer Platter", "category": "Starters", "description": "Bruschetta, spring rolls, stuffed mushrooms & shrimp tempura with signature dips.", "price": 850, "isAvailable": true },
-  { "id": 102, "name": "Crispy Calamari Rings", "category": "Starters", "description": "Lightly battered squid rings with sriracha aioli and lime wedge.", "price": 650, "isAvailable": true },
-  { "id": 103, "name": "Truffle Edamame Dumplings", "category": "Starters", "description": "Steamed dumplings with black truffle, edamame filling, and chili oil.", "price": 750, "isAvailable": true },
-  { "id": 104, "name": "Prawn Tempura", "category": "Starters", "description": "Tiger prawns in crispy tempura batter with sweet chili dipping sauce.", "price": 890, "isAvailable": true },
-  { "id": 105, "name": "Chicken Satay Skewers", "category": "Starters", "description": "Grilled chicken skewers marinated in turmeric with peanut sauce.", "price": 580, "isAvailable": true },
-  { "id": 106, "name": "Bruschetta Trio", "category": "Starters", "description": "Toasted ciabatta with tomato-basil, mushroom, and olive tapenade.", "price": 520, "isAvailable": true },
-  { "id": 107, "name": "Cheese Fondue Bites", "category": "Starters", "description": "Molten gruyère fondue croquettes with truffle honey drizzle.", "price": 680, "isAvailable": true },
-  { "id": 108, "name": "Spicy Tuna Tartare", "category": "Starters", "description": "Fresh tuna, avocado, sesame, sriracha on crispy wonton chips.", "price": 950, "isAvailable": true },
-  { "id": 109, "name": "Garlic Butter Mushrooms", "category": "Starters", "description": "Sautéed button mushrooms in herb garlic butter with sourdough.", "price": 450, "isAvailable": true },
-  { "id": 110, "name": "Loaded Nachos Supreme", "category": "Starters", "description": "Tortilla chips with jalapeños, cheddar, guacamole, sour cream.", "price": 590, "isAvailable": true },
-
-  { "id": 201, "name": "Imperial Prawn Tempura Roll", "category": "Sushi", "description": "Crispy prawn tempura, avocado, topped with truffle oil and gold leaf.", "price": 1650, "isAvailable": true },
-  { "id": 202, "name": "Dragon Rainbow Roll", "category": "Sushi", "description": "Eel, avocado, crab topped with sashimi rainbow of tuna & salmon.", "price": 1450, "isAvailable": true },
-  { "id": 203, "name": "Tempura Crunch Roll", "category": "Sushi", "description": "Crispy tempura shrimp roll with spicy mayo and tobiko.", "price": 950, "isAvailable": true },
-  { "id": 204, "name": "Salmon Nigiri (6 pcs)", "category": "Sushi", "description": "Fresh Norwegian salmon over seasoned sushi rice.", "price": 1100, "isAvailable": true },
-  { "id": 205, "name": "Spicy Tuna Roll", "category": "Sushi", "description": "Fresh tuna, sriracha mayo, cucumber, sesame seeds.", "price": 850, "isAvailable": true },
-  { "id": 206, "name": "California Roll", "category": "Sushi", "description": "Crab stick, avocado, cucumber, masago — a timeless classic.", "price": 750, "isAvailable": true },
-  { "id": 207, "name": "Volcano Roll", "category": "Sushi", "description": "Baked crab & scallop roll with spicy lava sauce topping.", "price": 1250, "isAvailable": true },
-  { "id": 208, "name": "Mango Avocado Roll", "category": "Sushi", "description": "Fresh mango, avocado, cream cheese — light and refreshing.", "price": 680, "isAvailable": true },
-
-  { "id": 301, "name": "The Jade Chicken Burger", "category": "Mains", "description": "Grilled herb chicken patty, aged cheddar, truffle aioli on brioche.", "price": 850, "isAvailable": true },
-  { "id": 302, "name": "Truffle Parmesan Pasta", "category": "Mains", "description": "Handmade tagliatelle with shaved black truffle and parmesan cream.", "price": 1100, "isAvailable": true },
-  { "id": 303, "name": "Grilled Lamb Chops", "category": "Mains", "description": "New Zealand lamb rack, rosemary jus, garlic mash, vegetables.", "price": 1650, "isAvailable": true },
-  { "id": 304, "name": "Pan-Seared Sea Bass", "category": "Mains", "description": "Chilean sea bass, lemon caper butter, asparagus, baby potatoes.", "price": 1450, "isAvailable": true },
-  { "id": 305, "name": "Mushroom Risotto", "category": "Mains", "description": "Creamy arborio with wild mushrooms, parmesan, truffle oil.", "price": 950, "isAvailable": true },
-  { "id": 306, "name": "Herb-Crusted Salmon", "category": "Mains", "description": "Atlantic salmon, herb crust, mashed sweet potato, broccolini.", "price": 1380, "isAvailable": true },
-
-  { "id": 401, "name": "Classic Margherita", "category": "Pizza", "description": "Buffalo mozzarella, San Marzano tomatoes, fresh basil.", "price": 750, "isAvailable": true },
-  { "id": 402, "name": "Chicken Pepperoni", "category": "Pizza", "description": "Chicken pepperoni, mozzarella, chili flakes on thin crust.", "price": 890, "isAvailable": true },
-  { "id": 403, "name": "BBQ Chicken Pizza", "category": "Pizza", "description": "Grilled chicken, BBQ sauce, caramelized onions, cilantro.", "price": 950, "isAvailable": true },
-  { "id": 404, "name": "Truffle Mushroom Pizza", "category": "Pizza", "description": "Wild mushroom medley, fontina, truffle oil, arugula.", "price": 1350, "isAvailable": true },
-  { "id": 405, "name": "Paneer Tikka Pizza", "category": "Pizza", "description": "Tandoori paneer, green chutney, onion, capsicum — Indo-Italian fusion.", "price": 980, "isAvailable": true },
-
-  { "id": 501, "name": "Truffle Mushroom Consommé", "category": "Soups", "description": "Rich wild mushroom soup garnished with microgreens.", "price": 550, "isAvailable": true },
-  { "id": 502, "name": "Tom Yum Goong", "category": "Soups", "description": "Spicy Thai prawn soup with lemongrass, galangal, kaffir lime.", "price": 620, "isAvailable": true },
-  { "id": 503, "name": "French Onion Soup", "category": "Soups", "description": "Caramelized onions in vegetable broth with gruyère crouton.", "price": 480, "isAvailable": true },
-  { "id": 504, "name": "Roasted Tomato Basil", "category": "Soups", "description": "Fire-roasted tomato soup with fresh basil cream swirl.", "price": 420, "isAvailable": true },
-
-  { "id": 601, "name": "Butter Chicken", "category": "Indian", "description": "Tandoori chicken in rich, creamy tomato-cashew makhani gravy.", "price": 650, "isAvailable": true },
-  { "id": 602, "name": "Hyderabadi Chicken Biryani", "category": "Indian", "description": "Saffron basmati, tender chicken, fried onions, whole spices, raita.", "price": 650, "isAvailable": true },
-  { "id": 603, "name": "Paneer Butter Masala", "category": "Indian", "description": "Soft cottage cheese cubes in rich, creamy tomato-onion gravy.", "price": 520, "isAvailable": true },
-  { "id": 604, "name": "Dal Makhani", "category": "Indian", "description": "Slow-cooked black lentils with cream and butter — 24hr dal.", "price": 420, "isAvailable": true },
-  { "id": 605, "name": "Tandoori Chicken Platter", "category": "Indian", "description": "Half tandoori chicken, seekh kebab, malai tikka, mint chutney.", "price": 890, "isAvailable": true },
-  { "id": 606, "name": "Lamb Rogan Josh", "category": "Indian", "description": "Kashmiri slow-cooked lamb in aromatic saffron-onion gravy.", "price": 780, "isAvailable": true },
-  { "id": 607, "name": "Palak Paneer", "category": "Indian", "description": "Cottage cheese cubes in fresh spinach and spice purée with cream.", "price": 480, "isAvailable": true },
-  { "id": 608, "name": "Chole Bhature", "category": "Indian", "description": "Spiced chickpea curry with fluffy deep-fried bread.", "price": 380, "isAvailable": true },
-  
-  { "id": 611, "name": "Tandoori Roti", "category": "Indian", "description": "Whole wheat flatbread baked in a traditional clay oven.", "price": 40, "isAvailable": true },
-  { "id": 612, "name": "Butter Roti", "category": "Indian", "description": "Tandoori roti glazed with generous amounts of butter.", "price": 50, "isAvailable": true },
-  { "id": 613, "name": "Roomali Roti", "category": "Indian", "description": "Paper-thin soft flatbread, perfect with rich gravies.", "price": 60, "isAvailable": true },
-  { "id": 614, "name": "Missi Roti", "category": "Indian", "description": "Spiced gram flour flatbread with onions and green chilies.", "price": 70, "isAvailable": true },
-  { "id": 615, "name": "Plain Naan", "category": "Indian", "description": "Soft and fluffy refined flour bread cooked in tandoor.", "price": 60, "isAvailable": true },
-  { "id": 616, "name": "Butter Naan", "category": "Indian", "description": "Classic naan brushed with melted butter and sesame seeds.", "price": 80, "isAvailable": true },
-  { "id": 617, "name": "Garlic Naan", "category": "Indian", "description": "Naan topped with minced garlic and fresh coriander.", "price": 90, "isAvailable": true },
-  
-  { "id": 618, "name": "Steamed Basmati Rice", "category": "Indian", "description": "Premium long-grain fragrant basmati rice.", "price": 150, "isAvailable": true },
-  { "id": 619, "name": "Jeera Rice", "category": "Indian", "description": "Basmati rice tempered with cumin seeds and ghee.", "price": 180, "isAvailable": true },
-  { "id": 620, "name": "Veg Pulao", "category": "Indian", "description": "Aromatic basmati rice cooked with mixed vegetables and spices.", "price": 220, "isAvailable": true },
-  { "id": 621, "name": "Peas Pulao", "category": "Indian", "description": "Fluffy basmati rice tossed with fresh green peas.", "price": 200, "isAvailable": true },
-  { "id": 622, "name": "Kashmiri Pulao", "category": "Indian", "description": "Sweet and savory rice with dry fruits, nuts, and fresh fruits.", "price": 280, "isAvailable": true },
-
-  { "id": 701, "name": "Chicken Ramen", "category": "Noodles", "description": "Rich chicken broth, tender chicken, soft egg, nori, bean sprouts.", "price": 780, "isAvailable": true },
-  { "id": 702, "name": "Pad Thai Classic", "category": "Noodles", "description": "Wok-tossed rice noodles, tamarind, peanuts, prawn, lime.", "price": 650, "isAvailable": true },
-  { "id": 703, "name": "Hakka Noodles", "category": "Noodles", "description": "Indo-Chinese stir-fried egg noodles with vegetables and soy sauce.", "price": 420, "isAvailable": true },
-
-  { "id": 801, "name": "Molten Chocolate Lava Cake", "category": "Desserts", "description": "Rich dark chocolate center, gold dust, berry coulis.", "price": 650, "isAvailable": true },
-  { "id": 802, "name": "Crème Brûlée Royale", "category": "Desserts", "description": "Vanilla bean custard with caramelized sugar and edible flowers.", "price": 550, "isAvailable": true },
-  { "id": 803, "name": "Tiramisu", "category": "Desserts", "description": "Layers of espresso-soaked ladyfingers, mascarpone cream.", "price": 520, "isAvailable": true },
-  { "id": 804, "name": "Gulab Jamun (4 pcs)", "category": "Desserts", "description": "Warm milk-solid balls soaked in rose-cardamom sugar syrup.", "price": 350, "isAvailable": true },
-  { "id": 805, "name": "Rasmalai", "category": "Desserts", "description": "Soft paneer dumplings in saffron-pistachio milk.", "price": 380, "isAvailable": true },
-
-  { "id": 901, "name": "Smoky Rosemary Cocktail", "category": "Beverages", "description": "Premium gin, rosemary smoke, citrus, elderflower.", "price": 750, "isAvailable": true },
-  { "id": 902, "name": "Virgin Mojito", "category": "Beverages", "description": "Fresh lime, mint, soda, sugar — refreshing classic.", "price": 220, "isAvailable": true },
-  { "id": 903, "name": "Fresh Watermelon Juice", "category": "Beverages", "description": "Cold-pressed watermelon with hint of mint and lime.", "price": 280, "isAvailable": true },
-  { "id": 904, "name": "Mango Lassi", "category": "Beverages", "description": "Thick yogurt smoothie with Alphonso mango and cardamom.", "price": 250, "isAvailable": true },
-  { "id": 913, "name": "Mineral Water Bottle (750ml)", "category": "Beverages", "description": "Naturally chilled pure mineral spring water served with lime & ice.", "price": 60, "isAvailable": true }
+  {
+    "id": 101,
+    "name": "Golden Appetizer Platter",
+    "category": "Starters",
+    "description": "Bruschetta, spring rolls, stuffed mushrooms & shrimp tempura with signature dips.",
+    "price": 850,
+    "isAvailable": false
+  },
+  {
+    "id": 102,
+    "name": "Crispy Calamari Rings",
+    "category": "Starters",
+    "description": "Lightly battered squid rings with sriracha aioli and lime wedge.",
+    "price": 650,
+    "isAvailable": true
+  },
+  {
+    "id": 103,
+    "name": "Truffle Edamame Dumplings",
+    "category": "Starters",
+    "description": "Steamed dumplings with black truffle, edamame filling, and chili oil.",
+    "price": 750,
+    "isAvailable": true
+  },
+  {
+    "id": 104,
+    "name": "Prawn Tempura",
+    "category": "Starters",
+    "description": "Tiger prawns in crispy tempura batter with sweet chili dipping sauce.",
+    "price": 890,
+    "isAvailable": true
+  },
+  {
+    "id": 105,
+    "name": "Chicken Satay Skewers",
+    "category": "Starters",
+    "description": "Grilled chicken skewers marinated in turmeric with peanut sauce.",
+    "price": 580,
+    "isAvailable": true
+  },
+  {
+    "id": 106,
+    "name": "Bruschetta Trio",
+    "category": "Starters",
+    "description": "Toasted ciabatta with tomato-basil, mushroom, and olive tapenade.",
+    "price": 520,
+    "isAvailable": true
+  },
+  {
+    "id": 107,
+    "name": "Cheese Fondue Bites",
+    "category": "Starters",
+    "description": "Molten gruyère fondue croquettes with truffle honey drizzle.",
+    "price": 680,
+    "isAvailable": true
+  },
+  {
+    "id": 108,
+    "name": "Spicy Tuna Tartare",
+    "category": "Starters",
+    "description": "Fresh tuna, avocado, sesame, sriracha on crispy wonton chips.",
+    "price": 950,
+    "isAvailable": true
+  },
+  {
+    "id": 109,
+    "name": "Garlic Butter Mushrooms",
+    "category": "Starters",
+    "description": "Sautéed button mushrooms in herb garlic butter with sourdough.",
+    "price": 450,
+    "isAvailable": true
+  },
+  {
+    "id": 110,
+    "name": "Loaded Nachos Supreme",
+    "category": "Starters",
+    "description": "Tortilla chips with jalapeños, cheddar, guacamole, sour cream.",
+    "price": 590,
+    "isAvailable": true
+  },
+  {
+    "id": 201,
+    "name": "Imperial Prawn Tempura Roll",
+    "category": "Sushi",
+    "description": "Crispy prawn tempura, avocado, topped with truffle oil and gold leaf.",
+    "price": 1650,
+    "isAvailable": true
+  },
+  {
+    "id": 202,
+    "name": "Dragon Rainbow Roll",
+    "category": "Sushi",
+    "description": "Eel, avocado, crab topped with sashimi rainbow of tuna & salmon.",
+    "price": 1450,
+    "isAvailable": true
+  },
+  {
+    "id": 203,
+    "name": "Tempura Crunch Roll",
+    "category": "Sushi",
+    "description": "Crispy tempura shrimp roll with spicy mayo and tobiko.",
+    "price": 950,
+    "isAvailable": true
+  },
+  {
+    "id": 204,
+    "name": "Salmon Nigiri (6 pcs)",
+    "category": "Sushi",
+    "description": "Fresh Norwegian salmon over seasoned sushi rice.",
+    "price": 1100,
+    "isAvailable": true
+  },
+  {
+    "id": 205,
+    "name": "Spicy Tuna Roll",
+    "category": "Sushi",
+    "description": "Fresh tuna, sriracha mayo, cucumber, sesame seeds.",
+    "price": 850,
+    "isAvailable": true
+  },
+  {
+    "id": 206,
+    "name": "California Roll",
+    "category": "Sushi",
+    "description": "Crab stick, avocado, cucumber, masago — a timeless classic.",
+    "price": 750,
+    "isAvailable": true
+  },
+  {
+    "id": 207,
+    "name": "Volcano Roll",
+    "category": "Sushi",
+    "description": "Baked crab & scallop roll with spicy lava sauce topping.",
+    "price": 1250,
+    "isAvailable": true
+  },
+  {
+    "id": 208,
+    "name": "Mango Avocado Roll",
+    "category": "Sushi",
+    "description": "Fresh mango, avocado, cream cheese — light and refreshing.",
+    "price": 680,
+    "isAvailable": true
+  },
+  {
+    "id": 301,
+    "name": "The Jade Chicken Burger",
+    "category": "Mains",
+    "description": "Grilled herb chicken patty, aged cheddar, truffle aioli on brioche.",
+    "price": 850,
+    "isAvailable": true
+  },
+  {
+    "id": 302,
+    "name": "Truffle Parmesan Pasta",
+    "category": "Mains",
+    "description": "Handmade tagliatelle with shaved black truffle and parmesan cream.",
+    "price": 1100,
+    "isAvailable": true
+  },
+  {
+    "id": 303,
+    "name": "Grilled Lamb Chops",
+    "category": "Mains",
+    "description": "New Zealand lamb rack, rosemary jus, garlic mash, vegetables.",
+    "price": 1650,
+    "isAvailable": true
+  },
+  {
+    "id": 304,
+    "name": "Pan-Seared Sea Bass",
+    "category": "Mains",
+    "description": "Chilean sea bass, lemon caper butter, asparagus, baby potatoes.",
+    "price": 1450,
+    "isAvailable": true
+  },
+  {
+    "id": 305,
+    "name": "Mushroom Risotto",
+    "category": "Mains",
+    "description": "Creamy arborio with wild mushrooms, parmesan, truffle oil.",
+    "price": 950,
+    "isAvailable": true
+  },
+  {
+    "id": 306,
+    "name": "Herb-Crusted Salmon",
+    "category": "Mains",
+    "description": "Atlantic salmon, herb crust, mashed sweet potato, broccolini.",
+    "price": 1380,
+    "isAvailable": true
+  },
+  {
+    "id": 401,
+    "name": "Classic Margherita",
+    "category": "Pizza",
+    "description": "Buffalo mozzarella, San Marzano tomatoes, fresh basil.",
+    "price": 750,
+    "isAvailable": true
+  },
+  {
+    "id": 402,
+    "name": "Chicken Pepperoni",
+    "category": "Pizza",
+    "description": "Chicken pepperoni, mozzarella, chili flakes on thin crust.",
+    "price": 890,
+    "isAvailable": true
+  },
+  {
+    "id": 403,
+    "name": "BBQ Chicken Pizza",
+    "category": "Pizza",
+    "description": "Grilled chicken, BBQ sauce, caramelized onions, cilantro.",
+    "price": 950,
+    "isAvailable": true
+  },
+  {
+    "id": 404,
+    "name": "Truffle Mushroom Pizza",
+    "category": "Pizza",
+    "description": "Wild mushroom medley, fontina, truffle oil, arugula.",
+    "price": 1350,
+    "isAvailable": true
+  },
+  {
+    "id": 405,
+    "name": "Paneer Tikka Pizza",
+    "category": "Pizza",
+    "description": "Tandoori paneer, green chutney, onion, capsicum — Indo-Italian fusion.",
+    "price": 980,
+    "isAvailable": true
+  },
+  {
+    "id": 501,
+    "name": "Truffle Mushroom Consommé",
+    "category": "Soups",
+    "description": "Rich wild mushroom soup garnished with microgreens.",
+    "price": 550,
+    "isAvailable": true
+  },
+  {
+    "id": 502,
+    "name": "Tom Yum Goong",
+    "category": "Soups",
+    "description": "Spicy Thai prawn soup with lemongrass, galangal, kaffir lime.",
+    "price": 620,
+    "isAvailable": true
+  },
+  {
+    "id": 503,
+    "name": "French Onion Soup",
+    "category": "Soups",
+    "description": "Caramelized onions in vegetable broth with gruyère crouton.",
+    "price": 480,
+    "isAvailable": true
+  },
+  {
+    "id": 504,
+    "name": "Roasted Tomato Basil",
+    "category": "Soups",
+    "description": "Fire-roasted tomato soup with fresh basil cream swirl.",
+    "price": 420,
+    "isAvailable": true
+  },
+  {
+    "id": 601,
+    "name": "Butter Chicken",
+    "category": "Indian",
+    "description": "Tandoori chicken in rich, creamy tomato-cashew makhani gravy.",
+    "price": 650,
+    "isAvailable": true
+  },
+  {
+    "id": 602,
+    "name": "Hyderabadi Chicken Biryani",
+    "category": "Indian",
+    "description": "Saffron basmati, tender chicken, fried onions, whole spices, raita.",
+    "price": 650,
+    "isAvailable": true
+  },
+  {
+    "id": 603,
+    "name": "Paneer Butter Masala",
+    "category": "Indian",
+    "description": "Soft cottage cheese cubes in rich, creamy tomato-onion gravy.",
+    "price": 520,
+    "isAvailable": true
+  },
+  {
+    "id": 604,
+    "name": "Dal Makhani",
+    "category": "Indian",
+    "description": "Slow-cooked black lentils with cream and butter — 24hr dal.",
+    "price": 420,
+    "isAvailable": true
+  },
+  {
+    "id": 605,
+    "name": "Tandoori Chicken Platter",
+    "category": "Indian",
+    "description": "Half tandoori chicken, seekh kebab, malai tikka, mint chutney.",
+    "price": 890,
+    "isAvailable": true
+  },
+  {
+    "id": 606,
+    "name": "Lamb Rogan Josh",
+    "category": "Indian",
+    "description": "Kashmiri slow-cooked lamb in aromatic saffron-onion gravy.",
+    "price": 780,
+    "isAvailable": true
+  },
+  {
+    "id": 607,
+    "name": "Palak Paneer",
+    "category": "Indian",
+    "description": "Cottage cheese cubes in fresh spinach and spice purée with cream.",
+    "price": 480,
+    "isAvailable": true
+  },
+  {
+    "id": 608,
+    "name": "Chole Bhature",
+    "category": "Indian",
+    "description": "Spiced chickpea curry with fluffy deep-fried bread.",
+    "price": 380,
+    "isAvailable": true
+  },
+  {
+    "id": 611,
+    "name": "Tandoori Roti",
+    "category": "Indian",
+    "description": "Whole wheat flatbread baked in a traditional clay oven.",
+    "price": 40,
+    "isAvailable": true
+  },
+  {
+    "id": 612,
+    "name": "Butter Roti",
+    "category": "Indian",
+    "description": "Tandoori roti glazed with generous amounts of butter.",
+    "price": 50,
+    "isAvailable": true
+  },
+  {
+    "id": 613,
+    "name": "Roomali Roti",
+    "category": "Indian",
+    "description": "Paper-thin soft flatbread, perfect with rich gravies.",
+    "price": 60,
+    "isAvailable": true
+  },
+  {
+    "id": 614,
+    "name": "Missi Roti",
+    "category": "Indian",
+    "description": "Spiced gram flour flatbread with onions and green chilies.",
+    "price": 70,
+    "isAvailable": true
+  },
+  {
+    "id": 615,
+    "name": "Plain Naan",
+    "category": "Indian",
+    "description": "Soft and fluffy refined flour bread cooked in tandoor.",
+    "price": 60,
+    "isAvailable": true
+  },
+  {
+    "id": 616,
+    "name": "Butter Naan",
+    "category": "Indian",
+    "description": "Classic naan brushed with melted butter and sesame seeds.",
+    "price": 80,
+    "isAvailable": true
+  },
+  {
+    "id": 617,
+    "name": "Garlic Naan",
+    "category": "Indian",
+    "description": "Naan topped with minced garlic and fresh coriander.",
+    "price": 90,
+    "isAvailable": true
+  },
+  {
+    "id": 618,
+    "name": "Steamed Basmati Rice",
+    "category": "Indian",
+    "description": "Premium long-grain fragrant basmati rice.",
+    "price": 150,
+    "isAvailable": true
+  },
+  {
+    "id": 619,
+    "name": "Jeera Rice",
+    "category": "Indian",
+    "description": "Basmati rice tempered with cumin seeds and ghee.",
+    "price": 180,
+    "isAvailable": true
+  },
+  {
+    "id": 620,
+    "name": "Veg Pulao",
+    "category": "Indian",
+    "description": "Aromatic basmati rice cooked with mixed vegetables and spices.",
+    "price": 220,
+    "isAvailable": true
+  },
+  {
+    "id": 621,
+    "name": "Peas Pulao",
+    "category": "Indian",
+    "description": "Fluffy basmati rice tossed with fresh green peas.",
+    "price": 200,
+    "isAvailable": true
+  },
+  {
+    "id": 622,
+    "name": "Kashmiri Pulao",
+    "category": "Indian",
+    "description": "Sweet and savory rice with dry fruits, nuts, and fresh fruits.",
+    "price": 280,
+    "isAvailable": true
+  },
+  {
+    "id": 701,
+    "name": "Chicken Ramen",
+    "category": "Noodles",
+    "description": "Rich chicken broth, tender chicken, soft egg, nori, bean sprouts.",
+    "price": 780,
+    "isAvailable": true
+  },
+  {
+    "id": 702,
+    "name": "Pad Thai Classic",
+    "category": "Noodles",
+    "description": "Wok-tossed rice noodles, tamarind, peanuts, prawn, lime.",
+    "price": 650,
+    "isAvailable": true
+  },
+  {
+    "id": 703,
+    "name": "Hakka Noodles",
+    "category": "Noodles",
+    "description": "Indo-Chinese stir-fried egg noodles with vegetables and soy sauce.",
+    "price": 420,
+    "isAvailable": true
+  },
+  {
+    "id": 801,
+    "name": "Molten Chocolate Lava Cake",
+    "category": "Desserts",
+    "description": "Rich dark chocolate center, gold dust, berry coulis.",
+    "price": 650,
+    "isAvailable": true
+  },
+  {
+    "id": 802,
+    "name": "Crème Brûlée Royale",
+    "category": "Desserts",
+    "description": "Vanilla bean custard with caramelized sugar and edible flowers.",
+    "price": 550,
+    "isAvailable": true
+  },
+  {
+    "id": 803,
+    "name": "Tiramisu",
+    "category": "Desserts",
+    "description": "Layers of espresso-soaked ladyfingers, mascarpone cream.",
+    "price": 520,
+    "isAvailable": true
+  },
+  {
+    "id": 804,
+    "name": "Gulab Jamun (4 pcs)",
+    "category": "Desserts",
+    "description": "Warm milk-solid balls soaked in rose-cardamom sugar syrup.",
+    "price": 350,
+    "isAvailable": true
+  },
+  {
+    "id": 805,
+    "name": "Rasmalai",
+    "category": "Desserts",
+    "description": "Soft paneer dumplings in saffron-pistachio milk.",
+    "price": 380,
+    "isAvailable": true
+  },
+  {
+    "id": 901,
+    "name": "Smoky Rosemary Cocktail",
+    "category": "Beverages",
+    "description": "Premium gin, rosemary smoke, citrus, elderflower.",
+    "price": 750,
+    "isAvailable": true
+  },
+  {
+    "id": 902,
+    "name": "Virgin Mojito",
+    "category": "Beverages",
+    "description": "Fresh lime, mint, soda, sugar — refreshing classic.",
+    "price": 220,
+    "isAvailable": true
+  },
+  {
+    "id": 903,
+    "name": "Fresh Watermelon Juice",
+    "category": "Beverages",
+    "description": "Cold-pressed watermelon with hint of mint and lime.",
+    "price": 280,
+    "isAvailable": true
+  },
+  {
+    "id": 904,
+    "name": "Mango Lassi",
+    "category": "Beverages",
+    "description": "Thick yogurt smoothie with Alphonso mango and cardamom.",
+    "price": 250,
+    "isAvailable": true
+  },
+  {
+    "id": 913,
+    "name": "Mineral Water Bottle (750ml)",
+    "category": "Beverages",
+    "description": "Naturally chilled pure mineral spring water served with lime & ice.",
+    "price": 60,
+    "isAvailable": true
+  }
 ]

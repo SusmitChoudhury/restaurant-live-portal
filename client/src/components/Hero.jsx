@@ -3,13 +3,12 @@ import { IconUtensils, IconArrowDown } from './Icons';
 
 const Hero = () => {
   return (
-    <section id="hero" style={{
+    <section id="hero" className="hero-banner" style={{
       minHeight: '100vh',
       width: '100%',
-      backgroundImage: `linear-gradient(135deg, rgba(15, 34, 26, 0.75) 0%, rgba(10, 15, 13, 0.9) 100%), url(${heroImg})`,
+      backgroundImage: `linear-gradient(135deg, rgba(15, 34, 26, 0.78) 0%, rgba(10, 15, 13, 0.92) 100%), url(${heroImg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -32,14 +31,14 @@ const Hero = () => {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '0.75rem',
+          gap: '0.6rem',
           background: 'rgba(212, 175, 55, 0.08)',
           border: '1px solid rgba(212, 175, 55, 0.35)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           borderRadius: '50px',
-          padding: '0.45rem 1.25rem',
-          marginBottom: '1.75rem',
+          padding: '0.35rem 1rem',
+          marginBottom: '1.5rem',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
           maxWidth: '95%',
           flexWrap: 'wrap',
@@ -47,11 +46,11 @@ const Hero = () => {
           <span style={{
             background: 'var(--color-accent)',
             color: '#0a0f0d',
-            fontWeight: '700',
-            fontSize: '0.72rem',
-            letterSpacing: '1px',
+            fontWeight: '800',
+            fontSize: '0.68rem',
+            letterSpacing: '0.8px',
             textTransform: 'uppercase',
-            padding: '0.2rem 0.65rem',
+            padding: '0.15rem 0.55rem',
             borderRadius: '20px',
             display: 'inline-flex',
             alignItems: 'center',
@@ -61,11 +60,11 @@ const Hero = () => {
           </span>
           <span style={{
             color: '#f0f5f2',
-            fontSize: '0.84rem',
+            fontSize: '0.78rem',
             fontWeight: '400',
-            lineHeight: '1.4',
+            lineHeight: '1.3',
           }}>
-            This is a sample demonstration website. Some minor errors may be present, but the final client-side website will be 100% complete and perfect.
+            Sample demonstration website. Final client site will be 100% complete.
           </span>
         </div>
 

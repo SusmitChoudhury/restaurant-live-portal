@@ -45,22 +45,7 @@ export default function Navbar({ onNavigate }) {
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`} style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 500,
-        backgroundColor: scrolled ? 'rgba(10, 15, 13, 0.95)' : 'rgba(10, 15, 13, 0.8)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
-        padding: '0.8rem 2rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        transition: 'all 0.3s ease'
-      }}>
+      <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <a href="#hero" className="navbar__brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -92,7 +77,7 @@ export default function Navbar({ onNavigate }) {
         </div>
 
         {/* Desktop Navigation */}
-        <div className="navbar__desktop" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <div className="navbar__desktop">
           {navLinks.map(link => (
             <a key={link.href} href={link.href} className="navbar__link">
               {link.label}

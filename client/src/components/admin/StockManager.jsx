@@ -6,223 +6,305 @@ export default function StockManager({ menu }) {
   const { toggleStock } = useSocket();
   const [selectedCat, setSelectedCat] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showOnlyOutOfStock, setShowOnlyOutOfStock] = useState(false);
+
+  const outOfStockCount = menu.filter(i => i.isAvailable === false).length;
 
   const filtered = menu.filter(item => {
+    const isOut = item.isAvailable === false;
+    if (showOnlyOutOfStock && !isOut) return false;
     const matchesCat = selectedCat === 'All' || item.category === selectedCat;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;
   });
-
-  const outOfStockCount = menu.filter(i => i.isAvailable === false).length;
 
   return (
     <div style={{
       backgroundColor: '#141a18',
       border: '1px solid rgba(212, 175, 55, 0.2)',
       borderRadius: '16px',
-      padding: '24px',
+      padding: 'clamp(14px, 3vw, 24px)',
       marginBottom: '32px'
     }}>
+      {/* Top Title & Status Header */}
       <div style={{
-        marginBottom: '20px',
+        marginBottom: '16px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         flexWrap: 'wrap',
-        gap: '12px'
+        gap: '10px'
       }}>
         <div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: '#fff', marginBottom: '4px' }}>
-            Live Inventory & Out-of-Stock Controller
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: '#fff', margin: '0 0 4px' }}>
+            Live Inventory & Stock Controller
           </h2>
-          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-            Toggle any dish "Out of Stock" when ingredients run out. Changes instantly lock ordering on all customer screens.
+          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0, lineHeight: '1.4' }}>
+            Toggle dishes "Out of Stock" when sold out. Changes are permanently saved and sync to all customer devices instantly.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          {outOfStockCount > 0 && (
-            <span style={{
-              backgroundColor: 'rgba(239, 68, 68, 0.15)',
-              color: '#f87171',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              padding: '4px 12px',
+        {/* Quick Stock Filters & Live Sync Tag */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowOnlyOutOfStock(!showOnlyOutOfStock)}
+            style={{
+              padding: '6px 12px',
               borderRadius: '20px',
-              fontSize: '0.78rem',
-              fontWeight: '700'
-            }}>
-              ⚠️ {outOfStockCount} {outOfStockCount === 1 ? 'Item' : 'Items'} Out of Stock
-            </span>
-          )}
+              fontSize: '0.76rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              border: showOnlyOutOfStock
+                ? '1px solid #ef4444'
+                : '1px solid rgba(239, 68, 68, 0.35)',
+              backgroundColor: showOnlyOutOfStock
+                ? 'rgba(239, 68, 68, 0.3)'
+                : 'rgba(239, 68, 68, 0.1)',
+              color: '#f87171',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease',
+              touchAction: 'manipulation'
+            }}
+          >
+            <span>⚠️</span>
+            <span>{outOfStockCount} {outOfStockCount === 1 ? 'Dish' : 'Dishes'} Out of Stock</span>
+            {showOnlyOutOfStock && <span style={{ fontSize: '0.65rem' }}>✕ (Clear)</span>}
+          </button>
 
           <div style={{
-            padding: '4px 12px',
+            padding: '5px 10px',
             borderRadius: '8px',
-            backgroundColor: 'rgba(212, 175, 55, 0.1)',
-            border: '1px solid var(--border-card-admin)',
-            fontSize: '0.75rem',
-            color: 'var(--color-accent)',
-            display: 'flex',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            fontSize: '0.72rem',
+            color: '#10b981',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '5px',
+            fontWeight: '600'
           }}>
-            ⚡ Live Sync Active
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+            Permanent Sync
           </div>
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '12px',
-        marginBottom: '20px'
-      }}>
-        {/* Category Pills */}
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCat(cat)}
-              style={{
-                padding: '4px 12px',
-                borderRadius: '16px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                border: selectedCat === cat ? '1px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.08)',
-                backgroundColor: selectedCat === cat ? 'var(--color-accent)' : 'rgba(255,255,255,0.03)',
-                color: selectedCat === cat ? '#0a0f0d' : 'var(--color-text-muted)',
-                transition: 'all 0.15s'
-              }}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Search input */}
+      {/* Search Bar: Full width for mobile */}
+      <div style={{ marginBottom: '14px' }}>
         <input
           type="text"
-          placeholder="Filter dish by name..."
+          placeholder="🔍 Search dish name (e.g. Biryani, Butter Chicken, Naan)..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{
-            padding: '6px 12px',
-            borderRadius: '8px',
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: '10px',
             background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid rgba(212, 175, 55, 0.25)',
             color: '#fff',
-            fontSize: '0.8rem',
+            fontSize: '16px', // Prevents iOS Safari automatic zoom on focus
             outline: 'none',
-            minWidth: '200px'
+            boxSizing: 'border-box'
           }}
         />
       </div>
 
-      {/* Menu Item Grid */}
+      {/* Category Pills: Horizontally swipeable on mobile */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '14px',
-        maxHeight: '520px',
-        overflowY: 'auto',
-        paddingRight: '6px'
+        display: 'flex',
+        gap: '6px',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        paddingBottom: '8px',
+        marginBottom: '16px'
       }}>
-        {filtered.map((item) => {
-          const isAvailable = item.isAvailable !== false;
-
+        {CATEGORIES.map(cat => {
+          const isSelected = selectedCat === cat;
+          const catCount = cat === 'All' ? menu.length : menu.filter(i => i.category === cat).length;
           return (
-            <div
-              key={item.id}
+            <button
+              key={cat}
+              onClick={() => setSelectedCat(cat)}
               style={{
-                backgroundColor: '#0a0f0d',
-                border: isAvailable ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(239, 68, 68, 0.4)',
-                borderRadius: '10px',
-                padding: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease',
-                boxShadow: isAvailable ? 'none' : '0 0 10px rgba(239, 68, 68, 0.12)'
+                padding: '6px 12px',
+                borderRadius: '20px',
+                fontSize: '0.76rem',
+                fontWeight: isSelected ? '700' : '500',
+                cursor: 'pointer',
+                flexShrink: 0,
+                border: isSelected ? '1px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: isSelected ? 'var(--color-accent)' : 'rgba(255,255,255,0.04)',
+                color: isSelected ? '#0a0f0d' : 'var(--color-text-muted)',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
+                touchAction: 'manipulation'
               }}
             >
-              {/* Thumbnail */}
-              <div style={{
-                width: '54px',
-                height: '54px',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                flexShrink: 0,
-                position: 'relative'
-              }}>
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    filter: isAvailable ? 'none' : 'grayscale(100%)'
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fit=crop&q=80';
-                  }}
-                />
-              </div>
-
-              {/* Info */}
-              <div style={{ flexGrow: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <h4 style={{
-                    fontSize: '0.85rem',
-                    color: isAvailable ? '#fff' : '#94a3b8',
-                    textDecoration: isAvailable ? 'none' : 'line-through',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontWeight: '600'
-                  }}>
-                    {item.name}
-                  </h4>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3px' }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
-                    {item.category}
-                  </span>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--color-accent)', fontWeight: '700' }}>
-                    ₹{item.price}
-                  </span>
-                </div>
-              </div>
-
-              {/* Stock Toggle Switch */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                <label className="stock-toggle-switch" title={`Toggle availability for ${item.name}`}>
-                  <input
-                    type="checkbox"
-                    checked={isAvailable}
-                    onChange={() => toggleStock(item.id)}
-                  />
-                  <span className="stock-slider"></span>
-                </label>
-                <span style={{
-                  fontSize: '0.62rem',
-                  fontWeight: '700',
-                  color: isAvailable ? '#10b981' : '#ef4444',
-                  textTransform: 'uppercase'
-                }}>
-                  {isAvailable ? 'In Stock' : 'Out'}
-                </span>
-              </div>
-            </div>
+              {cat} <span style={{ opacity: 0.7, fontSize: '0.7rem' }}>({catCount})</span>
+            </button>
           );
         })}
       </div>
+
+      {/* Menu Item Grid */}
+      {filtered.length === 0 ? (
+        <div style={{
+          textAlign: 'center',
+          padding: '36px 16px',
+          color: 'var(--color-text-muted)',
+          backgroundColor: '#0a0f0d',
+          borderRadius: '12px'
+        }}>
+          <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🍽️</div>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>No menu dishes found matching your criteria</p>
+          {showOnlyOutOfStock && (
+            <button
+              onClick={() => setShowOnlyOutOfStock(false)}
+              style={{
+                marginTop: '10px',
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-accent)',
+                cursor: 'pointer',
+                fontSize: '0.82rem',
+                textDecoration: 'underline'
+              }}
+            >
+              Show all dishes
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+          gap: '12px',
+          maxHeight: '560px',
+          overflowY: 'auto',
+          paddingRight: '4px'
+        }}>
+          {filtered.map((item) => {
+            const isAvailable = item.isAvailable !== false;
+
+            return (
+              <div
+                key={item.id}
+                style={{
+                  backgroundColor: '#0a0f0d',
+                  border: isAvailable ? '1px solid rgba(255,255,255,0.07)' : '1.5px solid rgba(239, 68, 68, 0.45)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isAvailable ? 'none' : '0 0 12px rgba(239, 68, 68, 0.15)'
+                }}
+              >
+                {/* Thumbnail Image */}
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  position: 'relative'
+                }}>
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    loading="lazy"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: isAvailable ? 'none' : 'grayscale(100%) opacity(0.6)'
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fit=crop&q=80';
+                    }}
+                  />
+                  {!isAvailable && (
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      backgroundColor: 'rgba(0,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#ef4444',
+                      fontWeight: '900',
+                      fontSize: '0.85rem'
+                    }}>
+                      ✕
+                    </div>
+                  )}
+                </div>
+
+                {/* Dish Info */}
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                  <h4 style={{
+                    fontSize: '0.88rem',
+                    color: isAvailable ? '#fff' : '#94a3b8',
+                    textDecoration: isAvailable ? 'none' : 'line-through',
+                    margin: '0 0 4px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    fontWeight: '700'
+                  }}>
+                    {item.name}
+                  </h4>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                      {item.category}
+                    </span>
+                    <span style={{ fontSize: '0.84rem', color: 'var(--color-accent)', fontWeight: '800' }}>
+                      ₹{item.price}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stock Toggle Switch & Status Pill */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  flexShrink: 0
+                }}>
+                  <label
+                    className="stock-toggle-switch"
+                    title={`Toggle ${item.name} in/out of stock`}
+                    style={{ cursor: 'pointer', touchAction: 'manipulation' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isAvailable}
+                      onChange={() => toggleStock(item.id)}
+                    />
+                    <span className="stock-slider" />
+                  </label>
+                  <span style={{
+                    fontSize: '0.65rem',
+                    fontWeight: '800',
+                    color: isAvailable ? '#10b981' : '#ef4444',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase'
+                  }}>
+                    {isAvailable ? 'In Stock' : 'Out'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

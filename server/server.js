@@ -61,15 +61,20 @@ app.get('/api/menu', (req, res) => {
 });
 
 app.post('/api/menu/toggle-stock', (req, res) => {
-  const { itemId } = req.body;
+  const { itemId, isAvailable } = req.body;
   const menu = readJSON(MENU_FILE);
-  const item = menu.find(i => i.id === itemId);
+  const item = menu.find(i => String(i.id) === String(itemId));
 
   if (!item) {
     return res.status(404).json({ error: 'Item not found' });
   }
 
-  item.isAvailable = !item.isAvailable;
+  if (typeof isAvailable === 'boolean') {
+    item.isAvailable = isAvailable;
+  } else {
+    item.isAvailable = !item.isAvailable;
+  }
+
   writeJSON(MENU_FILE, menu);
 
   // Broadcast real-time stock change to all connected clients (customers + admin)
@@ -80,6 +85,24 @@ app.post('/api/menu/toggle-stock', (req, res) => {
   });
 
   res.json({ success: true, item, menu });
+});
+
+app.post('/api/menu/sync-stock', (req, res) => {
+  const { outOfStockIds } = req.body;
+  if (!Array.isArray(outOfStockIds)) {
+    return res.status(400).json({ error: 'outOfStockIds array required' });
+  }
+
+  const idSet = new Set(outOfStockIds.map(String));
+  const menu = readJSON(MENU_FILE);
+
+  menu.forEach(item => {
+    item.isAvailable = !idSet.has(String(item.id));
+  });
+
+  writeJSON(MENU_FILE, menu);
+  io.emit('menu:batch_stock_updated', { menu });
+  res.json({ success: true, menu });
 });
 
 // Orders Endpoints
@@ -194,12 +217,16 @@ io.on('connection', (socket) => {
   });
 
   // Admin toggles menu item in stock / out of stock
-  socket.on('menu:toggle_stock', ({ itemId }, callback) => {
+  socket.on('menu:toggle_stock', ({ itemId, isAvailable }, callback) => {
     const menu = readJSON(MENU_FILE);
-    const item = menu.find(i => i.id === itemId);
+    const item = menu.find(i => String(i.id) === String(itemId));
 
     if (item) {
-      item.isAvailable = !item.isAvailable;
+      if (typeof isAvailable === 'boolean') {
+        item.isAvailable = isAvailable;
+      } else {
+        item.isAvailable = !item.isAvailable;
+      }
       writeJSON(MENU_FILE, menu);
 
       // Instantly push stock update to all connected customer menus
@@ -212,6 +239,26 @@ io.on('connection', (socket) => {
       if (typeof callback === 'function') callback({ success: true, item, menu });
     } else {
       if (typeof callback === 'function') callback({ success: false, error: 'Item not found' });
+    }
+  });
+
+  // Admin or client syncs entire persistent out-of-stock list
+  socket.on('menu:sync_all_stock', (outOfStockIds, callback) => {
+    try {
+      if (!Array.isArray(outOfStockIds)) return;
+      const idSet = new Set(outOfStockIds.map(String));
+      const menu = readJSON(MENU_FILE);
+
+      menu.forEach(item => {
+        item.isAvailable = !idSet.has(String(item.id));
+      });
+
+      writeJSON(MENU_FILE, menu);
+      io.emit('menu:batch_stock_updated', { menu });
+      if (typeof callback === 'function') callback({ success: true, menu });
+    } catch (err) {
+      console.error('menu:sync_all_stock error:', err);
+      if (typeof callback === 'function') callback({ success: false, error: err.message });
     }
   });
 

@@ -39,25 +39,53 @@ export const playOrderChime = () => {
   }
 };
 
+// Permanent out-of-stock storage key
+const OUT_OF_STOCK_STORAGE_KEY = 'restaurant_out_of_stock_ids';
+
+const getStoredOutOfStockIds = () => {
+  try {
+    const raw = localStorage.getItem(OUT_OF_STOCK_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map(String);
+    }
+  } catch {}
+  return [];
+};
+
+const saveStoredOutOfStockIds = (ids) => {
+  try {
+    const unique = Array.from(new Set(ids.map(String)));
+    localStorage.setItem(OUT_OF_STOCK_STORAGE_KEY, JSON.stringify(unique));
+  } catch {}
+};
+
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
 
-  // Initialize menu from localStorage cached availability or DEFAULT_MENU
+  // Initialize menu from permanent out-of-stock store + legacy cached availability
   const [menu, setMenu] = useState(() => {
+    const outOfStockIds = new Set(getStoredOutOfStockIds());
     try {
       const cachedStock = localStorage.getItem('restaurant_menu_stock');
       if (cachedStock) {
         const stockMap = JSON.parse(cachedStock);
-        return DEFAULT_MENU.map(item => ({
-          ...item,
-          isAvailable: stockMap[item.id] !== undefined ? stockMap[item.id] : item.isAvailable
-        }));
+        Object.entries(stockMap).forEach(([id, isAvail]) => {
+          if (isAvail === false) outOfStockIds.add(String(id));
+        });
       }
     } catch {
       // fallback
     }
-    return DEFAULT_MENU;
+
+    // Persist unified out-of-stock blacklist
+    saveStoredOutOfStockIds(Array.from(outOfStockIds));
+
+    return DEFAULT_MENU.map(item => ({
+      ...item,
+      isAvailable: !outOfStockIds.has(String(item.id))
+    }));
   });
 
   // Initialize orders from localStorage
@@ -102,14 +130,19 @@ export const SocketProvider = ({ children }) => {
   const socketRef = useRef();
   const broadcastChannelRef = useRef();
 
-  // Helper to persist stock state
+  // Helper to persist stock state (keeps both map & blacklist in sync)
   const persistStock = (newMenu) => {
     try {
       const stockMap = {};
+      const outOfStock = [];
       newMenu.forEach(item => {
-        stockMap[item.id] = item.isAvailable !== false;
+        const isAvail = item.isAvailable !== false;
+        stockMap[item.id] = isAvail;
+        stockMap[String(item.id)] = isAvail;
+        if (!isAvail) outOfStock.push(String(item.id));
       });
       localStorage.setItem('restaurant_menu_stock', JSON.stringify(stockMap));
+      saveStoredOutOfStockIds(outOfStock);
     } catch {
       // ignore
     }
@@ -163,9 +196,18 @@ export const SocketProvider = ({ children }) => {
         console.log('[BroadcastChannel Event]', type, payload);
 
         if (type === 'STOCK_TOGGLED') {
+          const targetIdStr = String(payload.itemId);
+          const currentOutOfStock = new Set(getStoredOutOfStockIds());
+          if (payload.isAvailable) {
+            currentOutOfStock.delete(targetIdStr);
+          } else {
+            currentOutOfStock.add(targetIdStr);
+          }
+          saveStoredOutOfStockIds(Array.from(currentOutOfStock));
+
           setMenu(prev => {
             const next = prev.map(item => {
-              if (item.id === payload.itemId || String(item.id) === String(payload.itemId)) {
+              if (String(item.id) === targetIdStr) {
                 return { ...item, isAvailable: payload.isAvailable };
               }
               return item;
@@ -237,20 +279,34 @@ export const SocketProvider = ({ children }) => {
       console.log('Connected to backend WebSocket:', s.id);
       setConnected(true);
 
-      // Sync menu stock from server
+      // Sync menu stock from server with permanent local overrides
       s.emit('menu:get', (serverMenu) => {
         if (Array.isArray(serverMenu) && serverMenu.length > 0) {
+          const outOfStockSet = new Set(getStoredOutOfStockIds());
+
+          // If the server explicitly marked any dish as unavailable, respect it as well
+          serverMenu.forEach(sm => {
+            if (sm.isAvailable === false) {
+              outOfStockSet.add(String(sm.id));
+            }
+          });
+
+          const consolidatedList = Array.from(outOfStockSet);
+          saveStoredOutOfStockIds(consolidatedList);
+
           setMenu(prev => {
             const next = prev.map(localItem => {
-              const serverItem = serverMenu.find(sm => sm.id === localItem.id || String(sm.id) === String(localItem.id));
-              if (serverItem) {
-                return { ...localItem, isAvailable: serverItem.isAvailable !== false };
-              }
-              return localItem;
+              const isOut = outOfStockSet.has(String(localItem.id));
+              return { ...localItem, isAvailable: !isOut };
             });
             persistStock(next);
             return next;
           });
+
+          // Sync our consolidated permanent out-of-stock blacklist back to server
+          if (consolidatedList.length > 0) {
+            s.emit('menu:sync_all_stock', consolidatedList);
+          }
         }
       });
 
@@ -270,9 +326,18 @@ export const SocketProvider = ({ children }) => {
 
     s.on('menu:stock_updated', (data) => {
       console.log('[Socket.IO] Stock updated:', data);
+      const targetIdStr = String(data.itemId);
+      const currentOutOfStock = new Set(getStoredOutOfStockIds());
+      if (data.isAvailable) {
+        currentOutOfStock.delete(targetIdStr);
+      } else {
+        currentOutOfStock.add(targetIdStr);
+      }
+      saveStoredOutOfStockIds(Array.from(currentOutOfStock));
+
       setMenu(prev => {
         const next = prev.map(item => {
-          if (item.id === data.itemId || String(item.id) === String(data.itemId)) {
+          if (String(item.id) === targetIdStr) {
             return { ...item, isAvailable: data.isAvailable };
           }
           return item;
@@ -280,6 +345,22 @@ export const SocketProvider = ({ children }) => {
         persistStock(next);
         return next;
       });
+    });
+
+    s.on('menu:batch_stock_updated', (data) => {
+      if (Array.isArray(data?.menu)) {
+        const outList = data.menu.filter(i => i.isAvailable === false).map(i => String(i.id));
+        saveStoredOutOfStockIds(outList);
+        const set = new Set(outList);
+        setMenu(prev => {
+          const next = prev.map(item => ({
+            ...item,
+            isAvailable: !set.has(String(item.id))
+          }));
+          persistStock(next);
+          return next;
+        });
+      }
     });
 
     s.on('order:new', (newOrder) => {
@@ -322,18 +403,26 @@ export const SocketProvider = ({ children }) => {
     };
   }, [backendUrl]);
 
-  // Action: Toggle Menu Item In/Out of Stock
+  // Action: Toggle Menu Item In/Out of Stock (Permanently stored)
   const toggleStock = useCallback((itemId) => {
+    const targetIdStr = String(itemId);
     let updatedAvailability = false;
 
     setMenu(prev => {
+      const currentOutOfStock = new Set(getStoredOutOfStockIds());
       const next = prev.map(item => {
-        if (item.id === itemId || String(item.id) === String(itemId)) {
+        if (String(item.id) === targetIdStr) {
           updatedAvailability = !item.isAvailable;
+          if (updatedAvailability) {
+            currentOutOfStock.delete(targetIdStr);
+          } else {
+            currentOutOfStock.add(targetIdStr);
+          }
           return { ...item, isAvailable: updatedAvailability };
         }
         return item;
       });
+      saveStoredOutOfStockIds(Array.from(currentOutOfStock));
       persistStock(next);
       return next;
     });
@@ -342,19 +431,19 @@ export const SocketProvider = ({ children }) => {
     if (broadcastChannelRef.current) {
       broadcastChannelRef.current.postMessage({
         type: 'STOCK_TOGGLED',
-        payload: { itemId, isAvailable: updatedAvailability }
+        payload: { itemId: targetIdStr, isAvailable: updatedAvailability }
       });
     }
 
     // 2. Emit over WebSocket to backend
     if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit('menu:toggle_stock', { itemId });
+      socketRef.current.emit('menu:toggle_stock', { itemId: targetIdStr, isAvailable: updatedAvailability });
     } else if (backendUrl) {
       // REST fallback
       fetch(`${backendUrl.replace(/\/$/, '')}/api/menu/toggle-stock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId })
+        body: JSON.stringify({ itemId: targetIdStr, isAvailable: updatedAvailability })
       }).catch(() => {});
     }
   }, [backendUrl]);

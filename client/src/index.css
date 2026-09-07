@@ -647,6 +647,29 @@ img {
   font-size: 1.1rem;
 }
 
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  background-color: rgba(10, 15, 13, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.navbar--scrolled {
+  background-color: rgba(10, 15, 13, 0.96);
+  padding: 0.6rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
 .navbar__desktop {
   display: flex;
   gap: 1.8rem;
@@ -807,16 +830,16 @@ img {
   }
 
   .navbar {
-    padding: 0.65rem 1rem;
+    padding: 0.55rem 1rem !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
   .navbar--scrolled {
-    padding: 0.55rem 1rem;
+    padding: 0.45rem 1rem !important;
   }
-  .navbar__desktop { display: none; }
+  .navbar__desktop { display: none !important; }
   .navbar__mobile-controls {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 0.5rem;
   }
@@ -856,7 +879,7 @@ img {
     min-height: 72px;
   }
 
-  /* Horizontally swipeable Category Tabs with native touch momentum */
+  /* Sticky Horizontally swipeable Category Tabs with native touch momentum */
   .category-tabs {
     display: flex;
     flex-wrap: nowrap;
@@ -864,9 +887,16 @@ img {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     gap: 0.5rem;
-    padding: 4px 0.25rem 12px;
-    margin-bottom: 2rem;
+    padding: 8px 0.5rem 10px;
+    margin-bottom: 1.5rem;
     scroll-snap-type: x proximity;
+    position: sticky;
+    top: 52px;
+    z-index: 40;
+    background: rgba(10, 15, 13, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
   }
   .category-tabs::-webkit-scrollbar {
     display: none;
@@ -1105,5 +1135,29 @@ input:checked + .stock-slider {
 }
 input:checked + .stock-slider:before {
   transform: translateX(24px);
+}
+
+/* Responsive Kitchen Mobile Controls */
+@media (max-width: 520px) {
+  .admin-btn-text {
+    display: none;
+  }
+}
+
+.admin-layout button,
+.admin-layout input,
+.admin-layout label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Silky smooth mobile scrolling without background jitter */
+.hero-banner {
+  background-attachment: scroll;
+}
+@media (min-width: 769px) {
+  .hero-banner {
+    background-attachment: fixed;
+  }
 }
 
